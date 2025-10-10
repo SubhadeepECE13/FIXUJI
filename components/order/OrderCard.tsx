@@ -1,0 +1,211 @@
+import React, { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { commonStyles } from "@/styles/common.style";
+import color from "@/themes/Colors.themes";
+import {
+  fontSizes,
+  windowHeight,
+  windowWidth,
+} from "@/themes/Constants.themes";
+import fonts from "@/themes/Fonts.themes";
+import CustomImage from "../common/CustomImage";
+import Chip from "./OrderChip";
+import { IUser } from "@/store/actions/users/users.types";
+import ContactActionsWrapper from "@/store/actions/orders/ContactActionWrapper";
+import Loader from "../common/Loader";
+import { SettingsResponse } from "@/store/actions/settings/settings.types";
+
+const Card = ({
+  vendor,
+  userData,
+  user,
+  Order,
+  settings,
+}: {
+  vendor: Order;
+  userData: Order;
+  user: IUser;
+  Order: Order;
+  settings: SettingsResponse;
+}) => {
+  const combinedOrder = {
+    userData: userData.userData,
+    vendor: vendor.vendor,
+    department: userData.department || "",
+    user: user,
+    Order: Order,
+    settings: settings,
+  };
+  console.log("main user id ", user.id);
+
+  return (
+    <>
+      <View style={[styles.container, commonStyles.shadowContainer]}>
+        <View style={styles.topRow}>
+          <View style={styles.leftSection}>
+            <Text style={styles.titleText}>
+              {userData.userData.displayName}
+            </Text>
+            <Text style={styles.orderId}>{userData.order_id}</Text>
+
+            <View style={styles.chipgaps}>
+              <View style={styles.chips}>
+                <Chip
+                  label={userData.service_name}
+                  backgroundColor={userData.service_color}
+                />
+                <Chip label={userData.variant.vehicle_type} />
+                <Text style={styles.status}>{userData.status}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Right side: Technician info */}
+          <View style={styles.rightBox}>
+            <CustomImage
+              imageUrl={vendor.vendor.vendor_img}
+              style={styles.avatar}
+            />
+            <Text style={styles.technicianName}>
+              {vendor.vendor.vendor_name}
+            </Text>
+
+            <Text style={styles.priceText}>
+              {new Intl.NumberFormat("en-IN", {
+                style: "currency",
+                currency: "INR",
+                minimumFractionDigits: 0,
+              }).format(vendor.variant.actual_price)}
+            </Text>
+          </View>
+        </View>
+
+        {/* Middle Section */}
+        <View style={styles.middleRow}>
+          <ContactActionsWrapper
+            phone={userData.userData.phoneNumber}
+            geolocation={userData.userData.navigateAddressLink}
+            containerStyle={styles.contact}
+            iconStyle={styles.icon}
+            order={userData}
+            user={user}
+            settings={settings}
+          />
+
+          <View style={styles.datetime}>
+            <Text style={styles.timeText}>{userData.date.time}</Text>
+            <Text style={styles.dateText}>
+              {new Date(userData.date.full_date).toLocaleDateString("en-US", {
+                month: "short",
+                day: "2-digit",
+                year: "numeric",
+              })}
+            </Text>
+          </View>
+        </View>
+
+        {/* Bottom Address */}
+        <Text style={styles.addressText}>{userData.location.full_address}</Text>
+      </View>
+    </>
+  );
+};
+
+export default React.memo(Card);
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: color.whiteColor,
+    padding: windowWidth(4),
+    borderRadius: windowWidth(4),
+    marginBottom: windowHeight(1),
+  },
+  topRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  leftSection: {
+    flex: 1,
+    paddingRight: windowWidth(1),
+  },
+  titleText: {
+    fontSize: fontSizes.rg,
+    fontFamily: fonts.semiBold,
+    color: color.appHeaderText,
+  },
+  orderId: {
+    fontSize: fontSizes.smMd,
+    color: color.primary,
+  },
+  chips: {
+    gap: windowHeight(1),
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  rightBox: {
+    alignItems: "flex-end",
+    justifyContent: "flex-start",
+  },
+  avatar: {
+    width: windowWidth(14),
+    height: windowWidth(14),
+    borderRadius: windowWidth(7),
+    resizeMode: "cover",
+    backgroundColor: color.gray,
+  },
+  technicianName: {
+    fontSize: fontSizes.sm,
+    color: color.placeholderText,
+    textAlign: "right",
+    width: windowWidth(30),
+  },
+  middleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: windowHeight(1),
+  },
+  contact: {
+    flexDirection: "row",
+    gap: windowWidth(3),
+  },
+  icon: {
+    width: windowWidth(8),
+    height: windowWidth(8),
+    borderRadius: windowWidth(2),
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: color.primary,
+  },
+  datetime: {
+    alignItems: "flex-end",
+  },
+  timeText: {
+    fontSize: fontSizes.lg,
+    fontFamily: fonts.bold,
+    color: color.primary,
+  },
+  dateText: {
+    fontSize: fontSizes.sm,
+    color: color.placeholderText,
+  },
+  addressText: {
+    fontSize: fontSizes.sm,
+    color: color.placeholderText,
+    marginTop: windowHeight(1),
+  },
+  chipgaps: {
+    marginTop: windowHeight(1),
+  },
+  priceText: {
+    fontSize: fontSizes.lg,
+    color: color.primary,
+    textAlign: "right",
+    marginTop: windowHeight(0.5),
+  },
+  status: {
+    fontSize: fontSizes.sm,
+    fontFamily: fonts.bold,
+    color: color.primary,
+    alignSelf: "flex-start",
+  },
+});

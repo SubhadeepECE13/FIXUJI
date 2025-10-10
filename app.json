@@ -1,0 +1,71 @@
+{
+  "expo": {
+    "name": "FixujiPartner",
+    "slug": "FixujiPartner",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/fixu.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "icon": {
+        "light": "./assets/images/fixu.png",
+        "dark": "./assets/images/fixu.png",
+        "tinted": "./assets/images/fixu.png"
+      },
+      "bundleIdentifier": "com.anonymous.FixujiPartner"
+    },
+    "android": {
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyChdUHF6BZMO5uRXQZy72AWtigeWGcjV-A"
+        }
+      },
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/fixu.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.anonymous.FixujiPartner",
+      "allowBackup": false,
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/fixuji-logo.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/fixuji-logo.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "940f5d12-7a16-4b1a-9216-687a1c3f2a92"
+      }
+    }
+  }
+}
