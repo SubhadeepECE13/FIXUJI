@@ -3,55 +3,105 @@ import { Redirect } from "expo-router";
 import { jwtDecode } from "jwt-decode";
 import { useEffect, useState } from "react";
 import Toast from "react-native-toast-message";
+import AppVersion from "./(routes)/update";
+import { useAppDispatch, useAppSelector } from "@/store/Reduxhook";
+import { getSettings } from "@/store/actions/settings/settingsActions";
+import { RootState } from "@/store/Store";
 
 interface DecodedToken {
   exp: number;
 }
 
+// export default function Index() {
+//   const [isLoading, setisLoading] = useState(false);
+//   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+//   useEffect(() => {
+//     let isMounted = true;
+//     const tokenCheck = async () => {
+//       try {
+//         const access_token = tokenStorage.getString(
+//           "app_access_token"
+//         ) as string;
+
+//         if (access_token && isMounted) {
+//           const decodedAccessToken = jwtDecode<DecodedToken>(access_token);
+
+//           const currentTime = Date.now() / 1000;
+//           if (decodedAccessToken?.exp < currentTime) {
+//             setIsLoggedIn(false);
+//           }
+//           setIsLoggedIn(true);
+//         }
+//       } catch (error) {
+//         Toast.show({
+//           type: "error",
+//           text1: "Access token expired ",
+//         });
+//         setIsLoggedIn(false);
+//       } finally {
+//         if (isMounted) {
+//           setisLoading(false);
+//         }
+//       }
+//     };
+
+//     tokenCheck();
+//     return () => {
+//       isMounted = false;
+//     };
+//   }, []);
+
+//   if (isLoading) {
+//     return null;
+//   }
+//   console.log(isLoggedIn);
+
+//   return (
+//     <Redirect
+//       href={isLoggedIn ? "/(routes)/dashboard" : "/(routes)/onBoarding"}
+//     />
+//   );
+// }
+
 export default function Index() {
-  const [isLoading, setisLoading] = useState(false);
+  const dispatch = useAppDispatch();
+  const settings = useAppSelector((state: RootState) => state.settings.data);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const appVersion = "1.0.15";
 
   useEffect(() => {
-    let isMounted = true;
-    const tokenCheck = async () => {
+    const initialize = async () => {
       try {
-        const access_token = tokenStorage.getString(
-          "app_access_token"
-        ) as string;
+        await dispatch(getSettings());
 
-        if (access_token && isMounted) {
+        const access_token = tokenStorage.getString("app_access_token");
+        if (access_token) {
           const decodedAccessToken = jwtDecode<DecodedToken>(access_token);
-
           const currentTime = Date.now() / 1000;
-          if (decodedAccessToken?.exp < currentTime) {
-            setIsLoggedIn(false);
-          }
-          setIsLoggedIn(true);
+          setIsLoggedIn(decodedAccessToken?.exp > currentTime);
         }
-      } catch (error) {
-        Toast.show({
-          type: "error",
-          text1: "Access token expired ",
-        });
+      } catch (err) {
         setIsLoggedIn(false);
       } finally {
-        if (isMounted) {
-          setisLoading(false);
-        }
+        setIsLoading(false);
       }
     };
 
-    tokenCheck();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    initialize();
+  }, [dispatch]);
 
-  if (isLoading) {
+  if (!settings) {
     return null;
   }
-  console.log(isLoggedIn);
+
+  const isLatestVersion = settings.version === appVersion;
+  if (!isLatestVersion) {
+    return <AppVersion appLink={settings.appLink} />;
+  }
+
+  if (isLoading) return null;
 
   return (
     <Redirect
