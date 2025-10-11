@@ -128,7 +128,7 @@ export default function OrdersScreen() {
     <TabView
       headerProps={{
         isBack: true,
-        title: "Orders",
+        title: "Bookings",
         isRightIcon: false,
       }}
       selectedIndex={selectedIndex}

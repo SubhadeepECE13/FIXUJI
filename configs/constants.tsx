@@ -5,7 +5,7 @@ import Images from "@/utils/images";
 
 export const DashBoardNavigationTab: NavigationTabProps[] = [
   {
-    title: "Orders",
+    title: "Bookings",
     image: Images.Orders,
     route: "/(routes)/orders",
   },

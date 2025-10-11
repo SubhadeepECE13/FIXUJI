@@ -72,7 +72,7 @@ const ContactActions: React.FC<Props> = ({
     } catch (error) {
       Toast.show({
         type: "error",
-        text1: "Unable to retrieve your location.",
+        text1: "Location Not Found!",
       });
     }
   };

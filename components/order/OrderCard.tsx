@@ -37,6 +37,13 @@ const Card = ({
     settings: settings,
   };
   console.log("main user id ", user.id);
+  const bookingDate = new Date(userData.date.full_date);
+  const today = new Date();
+
+  const isToday =
+    bookingDate.getDate() === today.getDate() &&
+    bookingDate.getMonth() === today.getMonth() &&
+    bookingDate.getFullYear() === today.getFullYear();
 
   return (
     <>
@@ -55,7 +62,7 @@ const Card = ({
                   backgroundColor={userData.service_color}
                 />
                 <Chip label={userData.variant.vehicle_type} />
-                <Text style={styles.status}>{userData.status}</Text>
+                <Text style={styles.status}>{Order.customer_zone}</Text>
               </View>
             </View>
           </View>
@@ -95,11 +102,13 @@ const Card = ({
           <View style={styles.datetime}>
             <Text style={styles.timeText}>{userData.date.time}</Text>
             <Text style={styles.dateText}>
-              {new Date(userData.date.full_date).toLocaleDateString("en-US", {
-                month: "short",
-                day: "2-digit",
-                year: "numeric",
-              })}
+              {isToday
+                ? "Today"
+                : bookingDate.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "2-digit",
+                    year: "numeric",
+                  })}
             </Text>
           </View>
         </View>
@@ -128,7 +137,7 @@ const styles = StyleSheet.create({
     paddingRight: windowWidth(1),
   },
   titleText: {
-    fontSize: fontSizes.rg,
+    fontSize: fontSizes.md,
     fontFamily: fonts.semiBold,
     color: color.appHeaderText,
   },
@@ -207,5 +216,8 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bold,
     color: color.primary,
     alignSelf: "flex-start",
+  },
+  chipTextStyle: {
+    fontSize: fontSizes.sm,
   },
 });

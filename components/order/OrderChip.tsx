@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, ViewStyle } from "react-native";
+import { View, Text, StyleSheet, ViewStyle, TextStyle } from "react-native";
 
 import color from "@/themes/Colors.themes";
 import { fontSizes, windowWidth } from "@/themes/Constants.themes";
@@ -9,6 +9,7 @@ interface ChipProps {
   style?: ViewStyle;
   backgroundColor?: string;
   textColor?: string;
+  lebelStyle?: TextStyle;
 }
 
 const getChipStyle = (label: string) => {
@@ -47,14 +48,14 @@ const getChipStyle = (label: string) => {
       return {
         backgroundColor: color.gray,
         icon: "tag",
-        textColor: color.regularText,
+        textColor: color.whiteColor,
       };
   }
 };
 
 const Chip: React.FC<ChipProps> = ({
   label,
-
+  lebelStyle,
   style,
   backgroundColor,
   textColor,
@@ -89,6 +90,6 @@ const styles = StyleSheet.create({
     marginRight: windowWidth(1),
   },
   label: {
-    fontSize: fontSizes.xs,
+    fontSize: fontSizes.sm,
   },
 });
