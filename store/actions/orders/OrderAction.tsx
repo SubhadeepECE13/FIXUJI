@@ -4,6 +4,12 @@ import { setError, userSlice } from "@/store/reducers/users/userSlice";
 import { AppDispatch } from "@/store/Store";
 import { LOCK_CALL } from "@/store/API";
 import { IUser } from "../users/users.types";
+import {
+  fetchOrderDetailsFailure,
+  fetchOrderDetailsStart,
+  fetchOrderDetailsSuccess,
+} from "@/store/reducers/orders/orderDetailesSlice";
+import { ServiceBooking } from "./orderDetailesAction";
 export interface CallLockRequest {
   callTo: string;
   callFrom: string;
@@ -75,7 +81,7 @@ export const buildCallLockPayload = (
 
 export const lockCall =
   (callData: CallLockRequest) => async (dispatch: AppDispatch) => {
-    console.log("lockCall thunk dispatched with payload:", callData); // Add here
+    console.log("lockCall thunk dispatched with payload:", callData);
     try {
       const res = await appAxios.post<CallLockResponse>(LOCK_CALL, callData);
       console.log("Call lock API response:", res.data);
@@ -88,5 +94,42 @@ export const lockCall =
       console.error("Call lock API error:", error);
       dispatch(setError("Call lock failed due to server error"));
       return { success: false, msg: "Server Error" };
+    }
+  };
+
+// export const fetchOrderDetailsByDocId =
+//   (order_id: string) => async (dispatch: AppDispatch) => {
+//     try {
+//       dispatch(fetchOrderDetailsStart());
+//       const response = await appAxios.get<ServiceBooking>(
+//         `api/v1/getBookingByOrder/${order_id}`
+//       );
+
+//       console.log("get order by id redponse .......", order_id);
+
+//       dispatch(fetchOrderDetailsSuccess(response.data));
+//     } catch (error: any) {
+//       dispatch(
+//         fetchOrderDetailsFailure(error.message || "Something went wrong")
+//       );
+//     }
+//   };
+
+export const fetchOrderDetailsByDocId =
+  (order_id: string) => async (dispatch: AppDispatch) => {
+    try {
+      dispatch(fetchOrderDetailsStart());
+
+      const response = await appAxios.get<ServiceBooking>(
+        `api/v1/getBookingByOrder/${order_id}`
+      );
+
+      console.log("Fetched order details for:", order_id);
+
+      dispatch(fetchOrderDetailsSuccess(response.data));
+    } catch (error: any) {
+      dispatch(
+        fetchOrderDetailsFailure(error.message || "Something went wrong")
+      );
     }
   };

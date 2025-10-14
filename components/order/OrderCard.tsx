@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { commonStyles } from "@/styles/common.style";
 import color from "@/themes/Colors.themes";
 import {
@@ -14,6 +14,7 @@ import { IUser } from "@/store/actions/users/users.types";
 import ContactActionsWrapper from "@/store/actions/orders/ContactActionWrapper";
 import Loader from "../common/Loader";
 import { SettingsResponse } from "@/store/actions/settings/settings.types";
+import { router } from "expo-router";
 
 const Card = ({
   vendor,
@@ -47,75 +48,82 @@ const Card = ({
 
   return (
     <>
-      <View style={[styles.container, commonStyles.shadowContainer]}>
-        <View style={styles.topRow}>
-          <View style={styles.leftSection}>
-            <Text style={styles.titleText}>
-              {userData.userData.displayName}
-            </Text>
-            <Text style={styles.orderId}>{userData.order_id}</Text>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={() => router.push(`/orderDetailes/${userData.orderDocId}`)}
+      >
+        <View style={[styles.container, commonStyles.shadowContainer]}>
+          <View style={styles.topRow}>
+            <View style={styles.leftSection}>
+              <Text style={styles.titleText}>
+                {userData.userData.displayName}
+              </Text>
+              <Text style={styles.orderId}>{userData.order_id}</Text>
 
-            <View style={styles.chipgaps}>
-              <View style={styles.chips}>
-                <Chip
-                  label={userData.service_name}
-                  backgroundColor={userData.service_color}
-                />
-                <Chip label={userData.variant.vehicle_type} />
-                <Text style={styles.status}>{Order.customer_zone}</Text>
+              <View style={styles.chipgaps}>
+                <View style={styles.chips}>
+                  <Chip
+                    label={userData.service_name}
+                    backgroundColor={userData.service_color}
+                  />
+                  <Chip label={userData.variant.vehicle_type} />
+                  <Text style={styles.status}>{Order.customer_zone}</Text>
+                </View>
               </View>
+            </View>
+
+            {/* Right side: Technician info */}
+            <View style={styles.rightBox}>
+              <CustomImage
+                imageUrl={vendor.vendor.vendor_img}
+                style={styles.avatar}
+              />
+              <Text style={styles.technicianName}>
+                {vendor.vendor.vendor_name}
+              </Text>
+
+              <Text style={styles.priceText}>
+                {new Intl.NumberFormat("en-IN", {
+                  style: "currency",
+                  currency: "INR",
+                  minimumFractionDigits: 0,
+                }).format(vendor.variant.actual_price)}
+              </Text>
             </View>
           </View>
 
-          {/* Right side: Technician info */}
-          <View style={styles.rightBox}>
-            <CustomImage
-              imageUrl={vendor.vendor.vendor_img}
-              style={styles.avatar}
+          {/* Middle Section */}
+          <View style={styles.middleRow}>
+            <ContactActionsWrapper
+              phone={userData.userData.phoneNumber}
+              geolocation={userData.userData.navigateAddressLink}
+              containerStyle={styles.contact}
+              iconStyle={styles.icon}
+              order={userData}
+              user={user}
+              settings={settings}
             />
-            <Text style={styles.technicianName}>
-              {vendor.vendor.vendor_name}
-            </Text>
 
-            <Text style={styles.priceText}>
-              {new Intl.NumberFormat("en-IN", {
-                style: "currency",
-                currency: "INR",
-                minimumFractionDigits: 0,
-              }).format(vendor.variant.actual_price)}
-            </Text>
+            <View style={styles.datetime}>
+              <Text style={styles.timeText}>{userData.date.time}</Text>
+              <Text style={styles.dateText}>
+                {isToday
+                  ? "Today"
+                  : bookingDate.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "2-digit",
+                      year: "numeric",
+                    })}
+              </Text>
+            </View>
           </View>
+
+          {/* Bottom Address */}
+          <Text style={styles.addressText}>
+            {userData.location.full_address}
+          </Text>
         </View>
-
-        {/* Middle Section */}
-        <View style={styles.middleRow}>
-          <ContactActionsWrapper
-            phone={userData.userData.phoneNumber}
-            geolocation={userData.userData.navigateAddressLink}
-            containerStyle={styles.contact}
-            iconStyle={styles.icon}
-            order={userData}
-            user={user}
-            settings={settings}
-          />
-
-          <View style={styles.datetime}>
-            <Text style={styles.timeText}>{userData.date.time}</Text>
-            <Text style={styles.dateText}>
-              {isToday
-                ? "Today"
-                : bookingDate.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "2-digit",
-                    year: "numeric",
-                  })}
-            </Text>
-          </View>
-        </View>
-
-        {/* Bottom Address */}
-        <Text style={styles.addressText}>{userData.location.full_address}</Text>
-      </View>
+      </TouchableOpacity>
     </>
   );
 };

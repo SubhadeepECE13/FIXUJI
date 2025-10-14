@@ -54,7 +54,7 @@ interface Order {
   order_id: string;
   userData: UserData;
   date: DateInfo;
-  orderTimeStamp: OrderTimeStamp;
+  orderTimeStamp?: OrderTimeStamp;
   status: string;
 }
 
