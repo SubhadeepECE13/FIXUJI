@@ -24,17 +24,14 @@ const ServiceDetailes: React.FC<Props> = ({ data }) => {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Service Details</Text>
+      <Text style={styles.title}>{service.name}</Text>
 
       {[
-        { label: "Service", value: service?.name },
-        { label: "Order ID", value: data.order_id },
         { label: "Status", value: data.status, color: statusColor },
-        { label: "Service Type", value: service?.type },
-        { label: "Total Cost", value: `₹${data.total}`, color: color.primary },
-        { label: "Booking Date", value: data.date?.full_date },
+        { label: "Order ID", value: data.order_id },
         { label: "Service Mode", value: data.serviceMode },
-        { label: "Addons", value: data.addons.addon_name },
+        { label: "Booking Date", value: data.date?.full_date },
+        { label: "Booking Time", value: data.date?.time },
       ].map((item, index) => (
         <View key={index} style={styles.row}>
           <Text style={styles.label}>{item.label}:</Text>
@@ -81,8 +78,9 @@ const styles = StyleSheet.create({
     color: color.primary,
   },
   value: {
-    fontSize: fontSizes.rg,
+    fontSize: fontSizes.md,
     color: color.regularText,
+    fontFamily: fonts.medium,
     textAlign: "right",
   },
 });

@@ -12,58 +12,6 @@ interface DecodedToken {
   exp: number;
 }
 
-// export default function Index() {
-//   const [isLoading, setisLoading] = useState(false);
-//   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-//   useEffect(() => {
-//     let isMounted = true;
-//     const tokenCheck = async () => {
-//       try {
-//         const access_token = tokenStorage.getString(
-//           "app_access_token"
-//         ) as string;
-
-//         if (access_token && isMounted) {
-//           const decodedAccessToken = jwtDecode<DecodedToken>(access_token);
-
-//           const currentTime = Date.now() / 1000;
-//           if (decodedAccessToken?.exp < currentTime) {
-//             setIsLoggedIn(false);
-//           }
-//           setIsLoggedIn(true);
-//         }
-//       } catch (error) {
-//         Toast.show({
-//           type: "error",
-//           text1: "Access token expired ",
-//         });
-//         setIsLoggedIn(false);
-//       } finally {
-//         if (isMounted) {
-//           setisLoading(false);
-//         }
-//       }
-//     };
-
-//     tokenCheck();
-//     return () => {
-//       isMounted = false;
-//     };
-//   }, []);
-
-//   if (isLoading) {
-//     return null;
-//   }
-//   console.log(isLoggedIn);
-
-//   return (
-//     <Redirect
-//       href={isLoggedIn ? "/(routes)/dashboard" : "/(routes)/onBoarding"}
-//     />
-//   );
-// }
-
 export default function Index() {
   const dispatch = useAppDispatch();
   const settings = useAppSelector((state: RootState) => state.settings.data);

@@ -11,22 +11,20 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import AnimatedTabs, { TabItem } from "./AnimatedTabs";
 
 import CustomSkeletonLoader from "./CustomSkeletonLoader";
 
-import { IconSetKeys } from "./Icon";
-import { SearchBarProps } from "react-native-screens";
-import Header, { HeaderProps } from "./Header";
+import color from "@/themes/Colors.themes";
 import {
   fontSizes,
   windowHeight,
   windowWidth,
 } from "@/themes/Constants.themes";
-import color from "@/themes/Colors.themes";
 import fonts from "@/themes/Fonts.themes";
 import CustomFlatList from "./CustomFlatList";
+import Header, { HeaderProps } from "./Header";
+import { IconSetKeys } from "./Icon";
 import ListEmpty from "./ListEmpty";
 
 interface TabViewProps<T extends IconSetKeys> {
@@ -67,14 +65,14 @@ const TabView = <T extends IconSetKeys>({
   const [footerHeight, setFooterHeight] = useState(0);
 
   const renderLoader = useCallback(({ index }: { index: number }) => {
-    // return (
-    //   <CustomSkeletonLoader
-    //     key={index}
-    //     dWidth={"100%"}
-    //     dHeight={skeletonDHeight}
-    //     radius={skeletonBorderRadius}
-    //   />
-    // );
+    return (
+      <CustomSkeletonLoader
+        key={index}
+        dWidth={"100%"}
+        dHeight={skeletonDHeight}
+        radius={skeletonBorderRadius}
+      />
+    );
   }, []);
   const renderListFooter = useCallback(() => {
     if (items === null || items.length === 0) {

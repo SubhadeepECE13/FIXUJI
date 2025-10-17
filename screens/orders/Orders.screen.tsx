@@ -5,8 +5,7 @@ import useDebounce from "@/hooks/useDebounce";
 import { getAllOrders } from "@/store/actions/orders/OrderAction";
 import { useAppDispatch, useAppSelector } from "@/store/Reduxhook";
 import { RootState } from "@/store/Store";
-import { windowHeight, windowWidth } from "@/themes/Constants.themes";
-import { router, useFocusEffect } from "expo-router";
+import { windowHeight } from "@/themes/Constants.themes";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 export default function OrdersScreen() {
@@ -113,16 +112,16 @@ export default function OrdersScreen() {
     fetchOrders();
   }, [debouncedSearchText, selectedIndex, dispatch]);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (!isMounted.current) {
-        isMounted.current = true;
-      } else {
-        fetchOrders();
-      }
-      return () => {};
-    }, [])
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     if (!isMounted.current) {
+  //       isMounted.current = true;
+  //     } else {
+  //       fetchOrders();
+  //     }
+  //     return () => {};
+  //   }, [])
+  // );
 
   return (
     <TabView
@@ -139,8 +138,8 @@ export default function OrdersScreen() {
       onRefresh={onRefresh}
       items={orders}
       renderItem={renderPartyItem}
-      skeletonDHeight={windowHeight(10)}
-      skeletonLength={10}
+      skeletonDHeight={windowHeight(30)}
+      skeletonLength={3}
       fetchMoreData={fetchMoreData}
       isListEnd={isOrderEnd}
     />

@@ -1,23 +1,44 @@
-import color from "@/themes/Colors.themes";
 import React, { FC } from "react";
-import { DimensionValue, View } from "react-native";
-// import SkeletonLoading from 'expo-skeleton-loading/index'
-const CustomSkeletonLoader: FC<{
+import {
+  DimensionValue,
+  StyleProp,
+  View,
+  ViewProps,
+  ViewStyle,
+} from "react-native";
+import { Skeleton } from "moti/skeleton";
+
+interface CustomSkeletonLoaderProps {
   dWidth?: DimensionValue;
   dHeight?: DimensionValue;
   radius?: number;
-}> = ({ dWidth, dHeight, radius = 0 }) => {
+  colorMode?: "light" | "dark";
+  show?: boolean;
+  style?: ViewProps["style"];
+  children?: React.ReactElement;
+}
+
+const CustomSkeletonLoader: FC<CustomSkeletonLoaderProps> = ({
+  dWidth = "100%",
+  dHeight,
+  radius,
+  colorMode = "light",
+  show = true,
+  style,
+  children,
+}) => {
   return (
-    // <SkeletonLoading background={color.gray} highlight={color.whiteColor}>
-    <View
-      style={{
-        width: dWidth,
-        height: dHeight,
-        borderRadius: radius,
-        backgroundColor: color.gray,
-      }}
-    />
-    // </SkeletonLoading>
+    <View style={style}>
+      <Skeleton
+        width={dWidth}
+        height={dHeight}
+        radius={radius}
+        colorMode={colorMode}
+        show={show}
+      >
+        {children}
+      </Skeleton>
+    </View>
   );
 };
 

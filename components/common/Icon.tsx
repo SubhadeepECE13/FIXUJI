@@ -1,6 +1,7 @@
 import * as Icons from "@expo/vector-icons";
 import React from "react";
-import { TextStyle, ViewStyle } from "react-native";
+import { ActivityIndicator, TextStyle, ViewStyle } from "react-native";
+import ThemeColor from "@/themes/Colors.themes";
 
 // Extract all icon sets from `@expo/vector-icons`
 export type IconSetKeys = keyof typeof Icons;
@@ -19,6 +20,7 @@ export interface CustomIconProps<T extends IconSetKeys> {
   color?: string; // Icon color
   type: T; // Icon set
   style?: ViewStyle | TextStyle; // Optional style
+  isLoading?: boolean;
 }
 
 export const CustomIcon = <T extends IconSetKeys>({
@@ -27,6 +29,7 @@ export const CustomIcon = <T extends IconSetKeys>({
   color = "black",
   type,
   style,
+  isLoading = false,
 }: CustomIconProps<T>) => {
   // eslint-disable-next-line import/namespace
   const IconComponent = Icons[type] as React.ElementType<{
@@ -40,5 +43,9 @@ export const CustomIcon = <T extends IconSetKeys>({
     throw new Error(`Invalid icon type: ${type}`);
   }
 
-  return <IconComponent name={name} size={size} color={color} style={style} />;
+  return isLoading ? (
+    <ActivityIndicator size="small" color={ThemeColor.whiteColor} />
+  ) : (
+    <IconComponent name={name} size={size} color={color} style={style} />
+  );
 };

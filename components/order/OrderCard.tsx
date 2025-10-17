@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   },
   contact: {
     flexDirection: "row",
-    gap: windowWidth(3),
+    gap: windowWidth(2),
   },
   icon: {
     width: windowWidth(8),

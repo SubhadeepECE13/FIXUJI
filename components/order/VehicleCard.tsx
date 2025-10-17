@@ -69,8 +69,9 @@ const styles = StyleSheet.create({
     color: color.primary,
   },
   value: {
-    fontSize: fontSizes.rg,
+    fontSize: fontSizes.md,
     color: color.regularText,
+    fontFamily: fonts.medium,
     textAlign: "right",
   },
 });

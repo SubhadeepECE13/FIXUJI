@@ -15,6 +15,7 @@ interface Props {
 
 const CustomerCard: React.FC<Props> = ({ data }) => {
   const customer = data.userData;
+  const customerAddress = data.location;
 
   return (
     <View style={styles.card}>
@@ -22,9 +23,8 @@ const CustomerCard: React.FC<Props> = ({ data }) => {
 
       {[
         { label: "Name", value: customer?.displayName || "N/A" },
-        { label: "Phone", value: customer?.phoneNumber || "N/A" },
+        { label: "Address", value: customerAddress?.full_address || "N/A" },
         { label: "Zone", value: customer?.customer_zone || "N/A" },
-        { label: "Source", value: customer?.customer_source || "N/A" },
       ].map((item, index) => (
         <View key={index} style={styles.row}>
           <Text style={styles.label}>{item.label}:</Text>
@@ -69,8 +69,9 @@ const styles = StyleSheet.create({
     color: color.primary,
   },
   value: {
-    fontSize: fontSizes.rg,
+    fontSize: fontSizes.md,
     color: color.regularText,
+    fontFamily: fonts.medium,
     textAlign: "right",
   },
 });

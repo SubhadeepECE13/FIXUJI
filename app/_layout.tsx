@@ -1,3 +1,5 @@
+import "@/tasks/eta.tasks";
+
 import NoInternet from "@/components/common/NoInternet";
 import NoPermission from "@/components/common/NoPermissions";
 
@@ -27,6 +29,15 @@ import {
 import Toast from "react-native-toast-message";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
+import * as Notifications from "expo-notifications";
+
+// Notifications.setNotificationHandler({
+//   handleNotification: async () => ({
+//     shouldShowAlert: true,
+//     shouldPlaySound: true,
+//     shouldSetBadge: false,
+//   }),
+// });
 
 SplashScreen.preventAutoHideAsync();
 

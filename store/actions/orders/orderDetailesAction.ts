@@ -163,7 +163,7 @@ export interface ServiceBooking {
     referralCode: string;
     variant: ServiceVariant;
     customer_source: string;
-    startTime: Timestamp;
+    startTime: string;
     timeDifference: TimeDifference;
     department: string;
     reachedTime: Timestamp;
@@ -184,5 +184,6 @@ export interface ServiceBooking {
     order_id: string;
     vendorCharges: number;
     status: string;
+    eta: number;
   };
 }
