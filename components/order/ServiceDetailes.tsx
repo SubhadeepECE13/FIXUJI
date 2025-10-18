@@ -22,6 +22,15 @@ const ServiceDetailes: React.FC<Props> = ({ data }) => {
         ? "#F44336"
         : "#FFA000";
 
+  const formattedDate = data.date?.full_date
+    ? new Date(data.date.full_date).toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      })
+    : "N/A";
+
   return (
     <View style={styles.card}>
       <Text style={styles.title}>{service.name}</Text>
@@ -30,7 +39,7 @@ const ServiceDetailes: React.FC<Props> = ({ data }) => {
         { label: "Status", value: data.status, color: statusColor },
         { label: "Order ID", value: data.order_id },
         { label: "Service Mode", value: data.serviceMode },
-        { label: "Booking Date", value: data.date?.full_date },
+        { label: "Booking Date", value: formattedDate },
         { label: "Booking Time", value: data.date?.time },
       ].map((item, index) => (
         <View key={index} style={styles.row}>

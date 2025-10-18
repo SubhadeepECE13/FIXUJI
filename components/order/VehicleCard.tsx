@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import color from "@/themes/Colors.themes";
 import { ServiceBooking } from "@/store/actions/orders/orderDetailesAction";
@@ -8,6 +8,8 @@ import {
   fontSizes,
 } from "@/themes/Constants.themes";
 import fonts from "@/themes/Fonts.themes";
+import UpdateCarDetailsModal from "./UpdateCarDetailesModal";
+import Button from "../common/Button";
 
 interface Props {
   data: ServiceBooking["data"];
@@ -15,10 +17,20 @@ interface Props {
 
 const VehicleCard: React.FC<Props> = ({ data }) => {
   const vehicle = data.vehicle;
-
+  const [isCarModalOpen, setCarModalOpen] = useState(false);
+  const orderId = data.orderDocId;
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Vehicle Details</Text>
+      <View style={styles.updateContainer}>
+        <Text style={styles.title}>Vehicle Details</Text>{" "}
+        <Button
+          title="Update Details"
+          onPress={() => setCarModalOpen(true)}
+          backgroundColor={color.yellow}
+          height={windowHeight(4)}
+          width={windowWidth(35)}
+        />
+      </View>
 
       {[
         { label: "Brand", value: vehicle?.brand || "N/A" },
@@ -31,6 +43,12 @@ const VehicleCard: React.FC<Props> = ({ data }) => {
           <Text style={styles.value}>{item.value}</Text>
         </View>
       ))}
+      <UpdateCarDetailsModal
+        isOpen={isCarModalOpen}
+        setOpened={setCarModalOpen}
+        orderId={orderId}
+        onSuccess={() => console.log("Car details updated!")}
+      />
     </View>
   );
 };
@@ -73,5 +91,11 @@ const styles = StyleSheet.create({
     color: color.regularText,
     fontFamily: fonts.medium,
     textAlign: "right",
+  },
+  updateContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: windowHeight(1),
   },
 });

@@ -207,8 +207,6 @@ import {
   windowHeight,
   windowWidth,
 } from "@/themes/Constants.themes";
-import Toast from "react-native-toast-message";
-import { appAxios } from "@/store/apiconfig";
 
 type VendorSelectModalProps = {
   isOpen: boolean;
@@ -375,6 +373,7 @@ const styles = StyleSheet.create({
   },
   checkbox: {
     marginRight: windowWidth(3),
+    borderRadius: windowWidth(3),
   },
   vendorName: {
     fontSize: fontSizes.md,

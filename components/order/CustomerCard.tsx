@@ -64,14 +64,18 @@ const styles = StyleSheet.create({
     marginVertical: windowHeight(0.4),
   },
   label: {
+    flex: 0.35,
     fontSize: fontSizes.rg,
     fontFamily: fonts.semiBold,
     color: color.primary,
   },
+
   value: {
+    flex: 0.65,
     fontSize: fontSizes.md,
     color: color.regularText,
     fontFamily: fonts.medium,
     textAlign: "right",
+    flexWrap: "wrap",
   },
 });

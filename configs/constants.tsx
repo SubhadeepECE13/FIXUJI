@@ -16,7 +16,7 @@ export const ORDERS_SCREEN_TABS: TabItem[] = [
     iconType: "FontAwesome",
     iconName: "address-book",
     label: "ASSIGNED",
-    status: "ASSIGNED,RESCHEDULED,REASSIGNED",
+    status: "ASSIGNED,RESCHEDULED,REASSIGNED,ON_THE_WAY,REACHED,IN_PROGRESS",
     operand: "EQ",
     filterText: "",
   },
