@@ -29,6 +29,9 @@ export type Color = {
   borderColor: string;
   appHeaderText: string;
   transparent: string;
+  lightBackground: string;
+  background: string;
+  borderBottomColor: string;
 };
 
 const color: Color = {
@@ -62,6 +65,9 @@ const color: Color = {
   lightRed: "rgba(255, 204, 211, 1)",
   warningText: "rgba(238, 36, 35, 1)",
   transparent: "rgba(0,0,0,0)",
+  lightBackground: "#fafafa",
+  background: "rgba(0,0,0,0.4)",
+  borderBottomColor: "rgba(228, 230, 235, 1)",
 };
 
 export default color;

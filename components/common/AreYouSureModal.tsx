@@ -12,23 +12,36 @@ import fonts from "@/themes/Fonts.themes";
 interface Props extends CustomModalProps {
   title: string;
   onPress: () => void;
+  icon?: React.ReactNode;
 }
 
-const AreYouSureModal = ({ isOpen, setOpened, title, onPress }: Props) => {
+const AreYouSureModal = ({
+  isOpen,
+  setOpened,
+  title,
+  onPress,
+  icon,
+}: Props) => {
   return (
     <CustomModal isOpen={isOpen} setOpened={setOpened}>
       <View style={styles.container}>
         <Animated.View
           entering={FadeInUp.delay(250).springify().damping(10).stiffness(200)}
         >
-          <CustomIcon
-            type="MaterialIcons"
-            name="info-outline"
-            color={color.appYellow}
-            size={windowWidth(24)}
-          />
+          {icon ? (
+            icon
+          ) : (
+            <CustomIcon
+              type="MaterialIcons"
+              name="info-outline"
+              color={color.appYellow}
+              size={windowWidth(24)}
+            />
+          )}
         </Animated.View>
+
         <Text style={styles.text}>{title}</Text>
+
         <View style={styles.buttonContainer}>
           <Button
             width={"45%"}

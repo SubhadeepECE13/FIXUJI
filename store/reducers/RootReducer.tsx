@@ -5,6 +5,8 @@ import settingsReducer from "../reducers/settings/settingsSlice";
 import orderDetailsReducer from "./orders/orderDetailesSlice";
 import vendorReducer from "./vendor/vendorSlice";
 import carReducer from "./orders/carUpdateSlice";
+import locationReducer from "./orders/locationSlice";
+import serviceReducer from "./services/serviceSlice";
 const rootReducer = combineReducers({
   user: userReducer,
   order: orderReducer,
@@ -12,6 +14,8 @@ const rootReducer = combineReducers({
   orderDetails: orderDetailsReducer,
   vendor: vendorReducer,
   car: carReducer,
+  location: locationReducer,
+  services: serviceReducer,
 });
 
 export default rootReducer;

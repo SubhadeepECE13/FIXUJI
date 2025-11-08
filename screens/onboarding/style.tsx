@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     height: windowHeight(50),
     // backgroundColor: "red",
     paddingTop: windowHeight(20),
-    marginTop: IsIOS ? windowHeight(25) : 0,
+    marginTop: IsIOS ? windowHeight(5) : 0,
   },
   bottomText: {
     color: color.placeholderText,

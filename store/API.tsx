@@ -1,6 +1,6 @@
-export const BASE_URL = "https://partnerappapi-uuwtazxhma-uc.a.run.app"; // prod
+// export const BASE_URL = "https://partnerappapi-uuwtazxhma-uc.a.run.app"; // prod
 
-// export const BASE_URL = "https://partnerappapi-ks4tifxyya-uc.a.run.app"; // dev
+export const BASE_URL = "https://partnerappapi-ks4tifxyya-uc.a.run.app"; // dev
 export const IMAGE_BASE_URL = `https://democrm.aerialview6.com/images`;
 export const IMAGE_BASE = `https://democrm.aerialview6.com`;
 

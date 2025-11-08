@@ -30,6 +30,7 @@ import Toast from "react-native-toast-message";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import * as Notifications from "expo-notifications";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 // Notifications.setNotificationHandler({
 //   handleNotification: async () => ({
@@ -110,31 +111,36 @@ function RootLayoutNav() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <StatusBar
-        style="light"
-        backgroundColor={color.primary}
-        translucent={false}
-      />
-      {IsIOS && (
-        <View style={{ height: insets.top, backgroundColor: color.primary }} />
-      )}
-      <Stack screenOptions={{ headerShown: false }}></Stack>
-      <Toast
-        config={CustomToastConfig}
-        visibilityTime={3000}
-        autoHide
-        position="bottom"
-        keyboardOffset={10}
-        bottomOffset={
-          isCameraPermission !== "granted" || isLoactionPermission !== "granted"
-            ? windowHeight(8)
-            : IsIOS
-              ? windowHeight(5)
-              : 10
-        }
-      />
-      <NoPermission resetPermissionCallCount={resetCallCount} />
-      <NoInternet />
+      <BottomSheetModalProvider>
+        <StatusBar
+          style="light"
+          backgroundColor={color.primary}
+          translucent={false}
+        />
+        {IsIOS && (
+          <View
+            style={{ height: insets.top, backgroundColor: color.primary }}
+          />
+        )}
+        <Stack screenOptions={{ headerShown: false }}></Stack>
+        <Toast
+          config={CustomToastConfig}
+          visibilityTime={3000}
+          autoHide
+          position="bottom"
+          keyboardOffset={10}
+          bottomOffset={
+            isCameraPermission !== "granted" ||
+            isLoactionPermission !== "granted"
+              ? windowHeight(8)
+              : IsIOS
+                ? windowHeight(5)
+                : 10
+          }
+        />
+        <NoPermission resetPermissionCallCount={resetCallCount} />
+        <NoInternet />
+      </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
 }

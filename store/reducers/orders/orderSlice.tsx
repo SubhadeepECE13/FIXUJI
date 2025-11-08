@@ -6,6 +6,7 @@ interface OrderState {
   error: string | null;
   isOrderEnd: boolean;
   success: string | null;
+  isOwnOrder: boolean;
 }
 
 const initialState: OrderState = {
@@ -14,6 +15,7 @@ const initialState: OrderState = {
   error: null,
   isOrderEnd: false,
   success: null,
+  isOwnOrder: true,
 };
 
 export const orderSlice = createSlice({
@@ -52,10 +54,19 @@ export const orderSlice = createSlice({
     clearOrder: (state) => {
       return initialState;
     },
+    setIsOwnOrder: (state, action: PayloadAction<boolean>) => {
+      state.isOwnOrder = action.payload;
+    },
   },
 });
 
-export const { setError, setOrders, setSuccess, clearOrder, setIsOrderEnd } =
-  orderSlice.actions;
+export const {
+  setError,
+  setOrders,
+  setSuccess,
+  clearOrder,
+  setIsOrderEnd,
+  setIsOwnOrder,
+} = orderSlice.actions;
 
 export default orderSlice.reducer;

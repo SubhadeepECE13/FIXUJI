@@ -23,10 +23,20 @@ export default function OrdersScreen() {
   const userCity = useAppSelector(
     (state) => state.user.user?.department || "city not selected in first time "
   );
-
+  const isOwnOrder = useAppSelector(
+    (state: RootState) => state.order.isOwnOrder
+  );
   const orders = useAppSelector((state: RootState) => state.order.orders);
+
   const userObject = useAppSelector((state) => state.user.user);
   console.log("user object is:", userObject);
+  const filteredOrders = React.useMemo(() => {
+    if (!orders) return [];
+    if (isOwnOrder && userObject) {
+      return orders.filter((o) => o.vendorId === userObject.id);
+    }
+    return orders;
+  }, [orders, isOwnOrder, userObject]);
 
   const settings = useAppSelector((state: RootState) => state.settings.data);
   const renderPartyItem = useCallback(
@@ -112,17 +122,6 @@ export default function OrdersScreen() {
     fetchOrders();
   }, [debouncedSearchText, selectedIndex, dispatch]);
 
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     if (!isMounted.current) {
-  //       isMounted.current = true;
-  //     } else {
-  //       fetchOrders();
-  //     }
-  //     return () => {};
-  //   }, [])
-  // );
-
   return (
     <TabView
       headerProps={{
@@ -136,7 +135,7 @@ export default function OrdersScreen() {
       loader={loader}
       refresh={refresh}
       onRefresh={onRefresh}
-      items={orders}
+      items={filteredOrders}
       renderItem={renderPartyItem}
       skeletonDHeight={windowHeight(30)}
       skeletonLength={3}

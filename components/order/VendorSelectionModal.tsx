@@ -228,7 +228,7 @@ const VendorSelectModal: React.FC<VendorSelectModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (isOpen) dispatch(fetchVendors());
+    if (isOpen) setSelectedIds([]);
   }, [isOpen]);
 
   const toggleSelection = (id: string) => {
@@ -262,26 +262,19 @@ const VendorSelectModal: React.FC<VendorSelectModalProps> = ({
   };
 
   const renderItem = ({ item, index }: any) => (
-    <Animated.View
-      entering={ZoomIn.delay(index * 80)
-        .damping(10)
-        .stiffness(200)}
-      style={styles.animatedRow}
+    <TouchableOpacity
+      style={styles.itemRow}
+      activeOpacity={0.8}
+      onPress={() => toggleSelection(item.id)}
     >
-      <TouchableOpacity
-        style={styles.itemRow}
-        activeOpacity={0.8}
-        onPress={() => toggleSelection(item.id)}
-      >
-        <Checkbox
-          value={selectedIds.includes(item.id)}
-          onValueChange={() => toggleSelection(item.id)}
-          color={selectedIds.includes(item.id) ? color.primary : undefined}
-          style={styles.checkbox}
-        />
-        <Text style={styles.vendorName}>{item.vendor_name}</Text>
-      </TouchableOpacity>
-    </Animated.View>
+      <Checkbox
+        value={selectedIds.includes(item.id)}
+        onValueChange={() => toggleSelection(item.id)}
+        color={selectedIds.includes(item.id) ? color.primary : undefined}
+        style={styles.checkbox}
+      />
+      <Text style={styles.vendorName}>{item.vendor_name}</Text>
+    </TouchableOpacity>
   );
 
   const renderSkeletonLoader = () => (
@@ -326,6 +319,7 @@ const VendorSelectModal: React.FC<VendorSelectModalProps> = ({
               maxHeight: windowHeight(30),
               width: "100%",
             }}
+            showsVerticalScrollIndicator={false}
           />
         )}
 
@@ -360,9 +354,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: color.appHeaderText,
     marginBottom: windowHeight(2),
-  },
-  animatedRow: {
-    width: "100%",
   },
   itemRow: {
     flexDirection: "row",

@@ -5,6 +5,7 @@ import {
   View,
   Text,
   StyleSheet,
+  InteractionManager,
 } from "react-native";
 import * as Linking from "expo-linking";
 import * as Location from "expo-location";
@@ -24,6 +25,7 @@ import { SettingsResponse } from "../settings/settings.types";
 import { IUser } from "../users/users.types";
 import { buildCallLockPayload, lockCall } from "./OrderAction";
 import VendorSelectModal from "@/components/order/VendorSelectionModal";
+import { fetchVendors } from "../vendors/vendorAction";
 
 type Props = {
   phone: string;
@@ -57,6 +59,10 @@ const ContactActions: React.FC<Props> = ({
 
   const [callLoading, setCallLoading] = useState(false);
   const [mapLoading, setMapLoading] = useState(false);
+  const canShowStartButton =
+    order.status === "ASSIGNED" ||
+    order.status === "REASSIGNED" ||
+    order.status === "RESCHEDULED";
 
   useEffect(() => {
     getCurrentLocation();
@@ -171,6 +177,10 @@ const ContactActions: React.FC<Props> = ({
   }, [navigateAddressLink, currentLocation, geolocation]);
   const handleStartPress = () => {
     setIsVendorModalOpen(true);
+
+    InteractionManager.runAfterInteractions(() => {
+      dispatch(fetchVendors());
+    });
   };
 
   const [isVendorModalOpen, setIsVendorModalOpen] = useState(false);
@@ -216,18 +226,20 @@ const ContactActions: React.FC<Props> = ({
           />
         </TouchableOpacity>
 
-        <Button
-          width={windowWidth(18)}
-          height={windowHeight(4.3)}
-          title="Start"
-          backgroundColor={color.primary}
-          iconType="MaterialIcons"
-          iconName="directions"
-          iconSize={16}
-          isIcon
-          titleStyle={{ fontSize: fontSizes.sm }}
-          onPress={handleStartPress}
-        />
+        {canShowStartButton && (
+          <Button
+            width={windowWidth(18)}
+            height={windowHeight(4.3)}
+            title="Start"
+            backgroundColor={color.primary}
+            iconType="MaterialIcons"
+            iconName="directions"
+            iconSize={16}
+            isIcon
+            titleStyle={{ fontSize: fontSizes.sm }}
+            onPress={handleStartPress}
+          />
+        )}
 
         <VendorSelectModal
           isOpen={isVendorModalOpen}

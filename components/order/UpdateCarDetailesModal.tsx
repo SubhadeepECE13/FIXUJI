@@ -1,105 +1,165 @@
-import React, { useState } from "react";
-import { StyleSheet, Text, TextInput, View } from "react-native";
 import { useAppDispatch, useAppSelector } from "@/store/Reduxhook";
+import { yupResolver } from "@hookform/resolvers/yup";
+import React, { useRef, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Image,
+  Alert,
+  Platform,
+  ActionSheetIOS,
+} from "react-native";
+import * as Yup from "yup";
+import * as ImagePicker from "expo-image-picker";
 
-import CustomModal from "@/components/common/CustomModal";
 import Button from "@/components/common/Button";
+import CustomModal from "@/components/common/CustomModal";
+import Input from "@/components/common/Input";
+import { updateCarDetails } from "@/store/actions/orders/carUpdateActions";
 import color from "@/themes/Colors.themes";
 import {
   fontSizes,
   windowHeight,
   windowWidth,
 } from "@/themes/Constants.themes";
-import { updateCarDetails } from "@/store/actions/orders/carUpdateActions";
+import fonts from "@/themes/Fonts.themes";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import Animated, { ZoomIn } from "react-native-reanimated";
+import BrandSelectSheet from "./BrandSelectionModal";
 
 type UpdateCarDetailsModalProps = {
   isOpen: boolean;
   setOpened: (val: boolean) => void;
   orderId: string;
   onSuccess?: () => void;
+  handleSendLocation: () => void;
 };
+
+interface VehicleUpdateFormData {
+  brand: string;
+  model: string;
+  numberPlate?: string;
+  capturedImage: string;
+}
+
+const validationSchema = Yup.object().shape({
+  brand: Yup.string().required("Brand Name is required"),
+  model: Yup.string().required("Car Model is required"),
+  numberPlate: Yup.string().optional(),
+  capturedImage: Yup.string().required("Car image is required"),
+});
 
 const UpdateCarDetailsModal: React.FC<UpdateCarDetailsModalProps> = ({
   isOpen,
   setOpened,
   orderId,
   onSuccess,
+  handleSendLocation,
 }) => {
   const dispatch = useAppDispatch();
   const { loading } = useAppSelector((state) => state.car);
+  const [disabled, setDisabled] = useState(false);
+  const brandSheetRef = useRef<BottomSheetModal>(null);
 
-  const [formData, setFormData] = useState({
-    brand: "",
-    model: "",
-    numberPlate: "",
-  });
+  const { control, handleSubmit, reset, setValue, watch, formState } =
+    useForm<VehicleUpdateFormData>({
+      resolver: yupResolver(validationSchema),
+      defaultValues: {
+        brand: "",
+        model: "",
+        numberPlate: "",
+        capturedImage: "",
+      },
+    });
 
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = async () => {
+  const handleUpdate = async (data: VehicleUpdateFormData) => {
+    setDisabled(true);
     try {
-      await dispatch(updateCarDetails(orderId, formData));
+      await dispatch(updateCarDetails(orderId, data, data.capturedImage));
       onSuccess?.();
+      if (handleSendLocation) {
+        handleSendLocation();
+      }
+      reset();
       setOpened(false);
     } catch (error) {
       console.error("Error updating car details:", error);
+    } finally {
+      setDisabled(false);
     }
   };
 
   return (
-    <CustomModal
-      isOpen={isOpen}
-      setOpened={setOpened}
-      isBlur
-      blurTint="dark"
-      blurIntensity={25}
-    >
-      <View style={styles.modalBox}>
-        <Text style={styles.title}>Update Car Details</Text>
+    <>
+      <CustomModal
+        isOpen={isOpen}
+        setOpened={setOpened}
+        isBlur
+        blurTint="dark"
+        blurIntensity={25}
+      >
+        <View style={styles.modalBox}>
+          <Text style={styles.title}>Update Car Details</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Car Brand"
-          value={formData.brand}
-          onChangeText={(text) => handleChange("brand", text)}
-          placeholderTextColor={color.gray}
-        />
+          <View style={styles.formContainer}>
+            {/* Brand Field */}
+            <Input
+              control={control}
+              name="brand"
+              type="select"
+              placeholder="Select Car Brand"
+              onSelectPress={() => {
+                setOpened(false);
+                setTimeout(() => brandSheetRef.current?.present?.(), 100);
+              }}
+            />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Car Model"
-          value={formData.model}
-          onChangeText={(text) => handleChange("model", text)}
-          placeholderTextColor={color.gray}
-        />
+            <Input
+              control={control}
+              name="model"
+              placeholder="Enter Car Model"
+            />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Number Plate"
-          value={formData.numberPlate}
-          onChangeText={(text) => handleChange("numberPlate", text)}
-          placeholderTextColor={color.gray}
-        />
+            <Input
+              control={control}
+              name="numberPlate"
+              placeholder="Enter Number Plate"
+            />
 
-        <Button
-          width={windowWidth(50)}
-          height={windowHeight(5)}
-          title="Update"
-          backgroundColor={color.primary}
-          onPress={handleSubmit}
-          disabled={
-            !formData.brand ||
-            !formData.model ||
-            !formData.numberPlate ||
-            loading
-          }
-          titleStyle={{ fontSize: fontSizes.md }}
-          isLoading={loading}
-        />
-      </View>
-    </CustomModal>
+            <Input
+              control={control}
+              name="capturedImage"
+              type="image"
+              placeholder="Add Car Image"
+            />
+          </View>
+
+          <Button
+            width={windowWidth(50)}
+            height={windowHeight(5)}
+            title="Update"
+            backgroundColor={color.primary}
+            onPress={handleSubmit(handleUpdate)}
+            disabled={disabled || loading}
+            titleStyle={{ fontSize: fontSizes.md }}
+            isLoading={loading}
+          />
+        </View>
+      </CustomModal>
+
+      {/* Brand Sheet */}
+      <BrandSelectSheet
+        ref={brandSheetRef}
+        onSelect={(brand) => {
+          setValue("brand", brand, { shouldValidate: true });
+          brandSheetRef.current?.close();
+          setOpened(true);
+        }}
+      />
+    </>
   );
 };
 
@@ -109,25 +169,25 @@ const styles = StyleSheet.create({
   modalBox: {
     width: windowWidth(85),
     backgroundColor: color.whiteColor,
-    borderRadius: 16,
+    borderRadius: windowWidth(5),
     paddingVertical: windowHeight(2),
     paddingHorizontal: windowWidth(4),
     alignItems: "center",
   },
   title: {
-    fontSize: fontSizes.lg,
-    fontWeight: "600",
-    color: color.appHeaderText,
+    fontSize: fontSizes.md,
+    fontFamily: fonts.bold,
+    color: color.primary,
     marginBottom: windowHeight(2),
   },
-  input: {
-    width: "100%",
-    backgroundColor: color.whiteColor,
-    borderRadius: 8,
-    paddingHorizontal: windowWidth(3),
-    paddingVertical: windowHeight(1.2),
-    fontSize: fontSizes.md,
-    color: color.blue,
-    marginBottom: windowHeight(1.5),
+  formContainer: {
+    width: windowWidth(75),
+    marginBottom: windowHeight(2),
+  },
+  errorText: {
+    color: "red",
+    fontSize: fontSizes.sm,
+    marginTop: 4,
+    alignSelf: "flex-start",
   },
 });

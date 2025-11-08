@@ -16,7 +16,10 @@ interface Location {
   latitude: number;
   longitude: number;
 }
-
+interface chargesDetails {
+  charge_amount: number;
+  charge_type: string;
+}
 interface Address {
   address_type: string;
   id: string;
@@ -42,6 +45,7 @@ interface ServiceVariant {
 }
 
 interface Addon {
+  length: number;
   addon_name: string;
   addon_img: string;
   display_price: number;
@@ -153,6 +157,7 @@ export interface ServiceBooking {
     distance: Distance;
     addons: Addon;
     discount: number;
+    charges: chargesDetails[];
     vendorId: string;
     vehicle: VehicleInfo;
     customer_zone: string;

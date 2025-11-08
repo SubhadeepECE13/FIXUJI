@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View, Switch } from "react-native";
 import Animated, { ZoomIn } from "react-native-reanimated";
 
 import { CustomIcon } from "../common/Icon";
 import { router } from "expo-router";
 import AreYouSureModal from "../common/AreYouSureModal";
 import color from "@/themes/Colors.themes";
-import { useAppDispatch } from "@/store/Reduxhook";
+import { useAppDispatch, useAppSelector } from "@/store/Reduxhook";
 import { commonStyles } from "@/styles/common.style";
 import { logout } from "@/store/actions/users/userAction";
 import {
@@ -15,6 +15,7 @@ import {
   windowWidth,
 } from "@/themes/Constants.themes";
 import fonts from "@/themes/Fonts.themes";
+import { setIsOwnOrder } from "@/store/reducers/orders/orderSlice";
 
 const Item = ({
   item,
@@ -59,8 +60,14 @@ const Item = ({
 
 const FunctionCard = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-
   const dispatch = useAppDispatch();
+
+  const isOwnOrder = useAppSelector((state) => state.order.isOwnOrder);
+
+  const handleToggleChange = (value: boolean) => {
+    dispatch(setIsOwnOrder(value));
+  };
+
   const PROFILE_PAGE_ITEMS: {
     label: string;
     iconType: string;
@@ -73,7 +80,6 @@ const FunctionCard = () => {
       iconName: "info",
       onPress: () => {},
     },
-
     {
       label: "Support",
       iconType: "FontAwesome5",
@@ -95,13 +101,20 @@ const FunctionCard = () => {
       },
     },
   ];
+
   return (
     <>
       <View style={[styles.container, commonStyles.deepShadowContainer]}>
         {PROFILE_PAGE_ITEMS.map((item, index) => (
           <Item key={index} item={item} index={index} />
         ))}
+
+        <View style={styles.toggleContainer}>
+          <Text style={styles.toggleLabel}>Show My Bookings Only</Text>
+          <Switch value={isOwnOrder} onValueChange={handleToggleChange} />
+        </View>
       </View>
+
       <AreYouSureModal
         isOpen={isModalVisible}
         setOpened={setIsModalVisible}
@@ -127,7 +140,24 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     rowGap: windowHeight(1.5),
   },
+  toggleContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    paddingVertical: windowHeight(1.5),
+    paddingHorizontal: windowWidth(3.5),
+    borderTopWidth: 1,
+    borderTopColor: color.borderColor,
+    marginTop: windowHeight(1),
+  },
+  toggleLabel: {
+    fontSize: fontSizes.md,
+    fontFamily: fonts.medium,
+    color: color.borderColor,
+  },
 });
+
 const itemStyles = StyleSheet.create({
   container: {
     flexDirection: "row",

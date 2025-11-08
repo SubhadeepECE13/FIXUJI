@@ -10,6 +10,12 @@ import {
   fetchOrderDetailsSuccess,
 } from "@/store/reducers/orders/orderDetailesSlice";
 import { ServiceBooking } from "./orderDetailesAction";
+import {
+  sendLocationFailure,
+  sendLocationStart,
+  sendLocationSuccess,
+} from "@/store/reducers/orders/locationSlice";
+import Toast from "react-native-toast-message";
 export interface CallLockRequest {
   callTo: string;
   callFrom: string;
@@ -131,5 +137,27 @@ export const fetchOrderDetailsByDocId =
       dispatch(
         fetchOrderDetailsFailure(error.message || "Something went wrong")
       );
+    }
+  };
+
+export const sendLocation =
+  (latitude: number, longitude: number, order_id: string) =>
+  async (dispatch: AppDispatch) => {
+    try {
+      dispatch(sendLocationStart());
+      const response = await appAxios.post(
+        `api/v1/updateReachedAction/${order_id}`,
+        {
+          latitude,
+          longitude,
+        }
+      );
+      dispatch(sendLocationSuccess(response.data));
+      Toast.show({
+        type: "success",
+        text1: "Location Sent Successfully",
+      });
+    } catch (error: any) {
+      dispatch(sendLocationFailure(error.message || "Failed to send location"));
     }
   };
