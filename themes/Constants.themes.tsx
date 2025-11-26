@@ -62,6 +62,7 @@ export const fontSizes = {
   xs: RFValue(8), // Extra-small
   xsm: RFValue(9), // Smallest
   sm: RFValue(11), // Small
+  xm: RFValue(10),
   rg: RFValue(12), // Regular
   smMd: RFValue(14), // Small Medium
   md: RFValue(15), // Medium

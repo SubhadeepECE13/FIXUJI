@@ -8,12 +8,10 @@ import CustomSkeletonLoader from "@/components/common/CustomSkeletonLoader";
 import Header from "@/components/common/Header";
 import CustomerCard from "@/components/order/CustomerCard";
 import BookingSummaryCard from "@/components/order/ServiceDetailes";
-import VehicleCard from "@/components/order/VehicleCard";
 import { AppDispatch, RootState } from "@/store/Store";
 import { commonStyles } from "@/styles/common.style";
 import color from "@/themes/Colors.themes";
 import { windowHeight, windowWidth } from "@/themes/Constants.themes";
-import AddonSuggestionCard from "@/components/order/VehicleCard";
 
 const Loader = () => {
   return (
@@ -95,28 +93,6 @@ const OrderDetailsScreen = () => {
             <CustomerCard data={orderDetails.data} />
             <BookingSummaryCard data={orderDetails.data} />
             {/* <VehicleCard data={orderDetails.data} /> */}
-            <AddonSuggestionCard
-              addons={[
-                {
-                  id: "1",
-                  name: "Premium  Polish",
-                  commission: "₹150",
-                  price: 2399,
-                },
-                {
-                  id: "2",
-                  name: "Premium  Polish",
-                  commission: "₹200",
-                  price: 2399,
-                },
-                {
-                  id: "3",
-                  name: "Premium Machine Polish",
-                  commission: "₹180",
-                  price: 2399,
-                },
-              ]}
-            />
           </>
         )}
       </ScrollView>

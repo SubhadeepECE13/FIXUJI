@@ -99,9 +99,9 @@ interface UpdateCarPayload {
 }
 
 export const updateCarDetails =
-  (orderId: string, payload: UpdateCarPayload, imageUri?: string) =>
+  (orderDocId: string, payload: UpdateCarPayload) =>
   async (dispatch: AppDispatch) => {
-    if (!orderId) {
+    if (!orderDocId) {
       Toast.show({
         type: "error",
         text1: "Order ID is missing. Cannot update car details.",
@@ -112,33 +112,11 @@ export const updateCarDetails =
     try {
       dispatch(setCarLoading(true));
 
-      const formData = new FormData();
-
-      formData.append("brand", payload.brand);
-      formData.append("model", payload.model);
-      if (payload.numberPlate)
-        formData.append("numberPlate", payload.numberPlate);
-
-      if (imageUri) {
-        const filename = imageUri.split("/").pop();
-        const type = `image/${filename?.split(".").pop()}`;
-
-        formData.append("carImage", {
-          uri: imageUri,
-          name: filename,
-          type,
-        } as any);
-      }
-
       const response = await appAxios.put(
-        `api/v1/updateCarInfo/${orderId}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        `/api/v1/updateCarInfo/${orderDocId}`,
+        payload
       );
+      console.log("car details update", response);
 
       dispatch(setCarSuccess(response.data));
       Toast.show({
@@ -149,12 +127,12 @@ export const updateCarDetails =
       return response.data;
     } catch (error: any) {
       console.error("Error updating car:", error);
+      dispatch(setCarError(error.message || "Failed to update car details"));
       Toast.show({
         type: "error",
         text1: "Failed to update car details",
         text2: error.message,
       });
-      dispatch(setCarError(error.message));
       throw error;
     } finally {
       dispatch(setCarLoading(false));

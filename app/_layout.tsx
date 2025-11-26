@@ -1,5 +1,6 @@
 import "@/tasks/eta.tasks";
-
+import "@/utils/translator/liveTranslator";
+import "@/utils/translator/patchText";
 import NoInternet from "@/components/common/NoInternet";
 import NoPermission from "@/components/common/NoPermissions";
 

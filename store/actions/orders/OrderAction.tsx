@@ -16,6 +16,8 @@ import {
   sendLocationSuccess,
 } from "@/store/reducers/orders/locationSlice";
 import Toast from "react-native-toast-message";
+import { router } from "expo-router";
+import { triggerOrderRefetch } from "../carImage/refetchActions";
 export interface CallLockRequest {
   callTo: string;
   callFrom: string;
@@ -141,12 +143,12 @@ export const fetchOrderDetailsByDocId =
   };
 
 export const sendLocation =
-  (latitude: number, longitude: number, order_id: string) =>
+  (latitude: number, longitude: number, orderDocId: string) =>
   async (dispatch: AppDispatch) => {
     try {
       dispatch(sendLocationStart());
       const response = await appAxios.post(
-        `api/v1/updateReachedAction/${order_id}`,
+        `api/v1/updateReachedAction/${orderDocId}`,
         {
           latitude,
           longitude,
@@ -157,6 +159,8 @@ export const sendLocation =
         type: "success",
         text1: "Location Sent Successfully",
       });
+
+      dispatch(triggerOrderRefetch(orderDocId));
     } catch (error: any) {
       dispatch(sendLocationFailure(error.message || "Failed to send location"));
     }

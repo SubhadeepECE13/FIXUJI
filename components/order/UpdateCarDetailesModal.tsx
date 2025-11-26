@@ -29,27 +29,30 @@ import fonts from "@/themes/Fonts.themes";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import Animated, { ZoomIn } from "react-native-reanimated";
 import BrandSelectSheet from "./BrandSelectionModal";
+import { useLocalSearchParams } from "expo-router";
+import { ServiceBooking } from "@/store/actions/orders/orderDetailesAction";
 
 type UpdateCarDetailsModalProps = {
   isOpen: boolean;
   setOpened: (val: boolean) => void;
   orderId: string;
   onSuccess?: () => void;
-  handleSendLocation: () => void;
+  // handleSendLocation: () => void;
+  orderDocId: string;
 };
 
 interface VehicleUpdateFormData {
   brand: string;
   model: string;
   numberPlate?: string;
-  capturedImage: string;
+  capturedImage?: string;
 }
 
 const validationSchema = Yup.object().shape({
   brand: Yup.string().required("Brand Name is required"),
   model: Yup.string().required("Car Model is required"),
   numberPlate: Yup.string().optional(),
-  capturedImage: Yup.string().required("Car image is required"),
+  capturedImage: Yup.string().optional(),
 });
 
 const UpdateCarDetailsModal: React.FC<UpdateCarDetailsModalProps> = ({
@@ -57,7 +60,8 @@ const UpdateCarDetailsModal: React.FC<UpdateCarDetailsModalProps> = ({
   setOpened,
   orderId,
   onSuccess,
-  handleSendLocation,
+  // handleSendLocation,
+  orderDocId,
 }) => {
   const dispatch = useAppDispatch();
   const { loading } = useAppSelector((state) => state.car);
@@ -78,11 +82,14 @@ const UpdateCarDetailsModal: React.FC<UpdateCarDetailsModalProps> = ({
   const handleUpdate = async (data: VehicleUpdateFormData) => {
     setDisabled(true);
     try {
-      await dispatch(updateCarDetails(orderId, data, data.capturedImage));
-      onSuccess?.();
-      if (handleSendLocation) {
-        handleSendLocation();
+      if (!orderDocId) {
+        throw new Error("Order ID is required to update car details.");
       }
+      await dispatch(updateCarDetails(orderDocId, data));
+      onSuccess?.();
+      // if (handleSendLocation) {
+      //   handleSendLocation();
+      // }
       reset();
       setOpened(false);
     } catch (error) {
@@ -134,6 +141,7 @@ const UpdateCarDetailsModal: React.FC<UpdateCarDetailsModalProps> = ({
               name="capturedImage"
               type="image"
               placeholder="Add Car Image"
+              orderId={orderId}
             />
           </View>
 

@@ -1,5 +1,10 @@
 import { appAxios } from "@/store/apiconfig";
 import {
+  fetchAddonsFailure,
+  fetchAddonsStart,
+  fetchAddonsSuccess,
+} from "@/store/reducers/services/addOnsSlice";
+import {
   fetchServicesFailure,
   fetchServicesStart,
   fetchServicesSuccess,
@@ -25,3 +30,20 @@ export const fetchServices = () => async (dispatch: AppDispatch) => {
     });
   }
 };
+
+export const fetchAddonsByService =
+  (service: string, variant: string) => async (dispatch: AppDispatch) => {
+    try {
+      dispatch(fetchAddonsStart());
+
+      const res = await appAxios.get(
+        `/api/v1/getAddonsByService?service=${encodeURIComponent(
+          service
+        )}&variant=${encodeURIComponent(variant)}`
+      );
+
+      dispatch(fetchAddonsSuccess(res.data?.addons || []));
+    } catch (error: any) {
+      dispatch(fetchAddonsFailure(error.message || "Failed to fetch addons"));
+    }
+  };

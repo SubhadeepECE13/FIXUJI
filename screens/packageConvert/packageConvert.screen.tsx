@@ -1,53 +1,60 @@
-import Header from "@/components/common/Header";
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
 import Button from "@/components/common/Button";
-import color from "@/themes/Colors.themes";
-import {
-  windowHeight,
-  windowWidth,
-  fontSizes,
-} from "@/themes/Constants.themes";
-import fonts from "@/themes/Fonts.themes";
+import Header from "@/components/common/Header";
 import AddonSection from "@/components/packageConvert/Addons";
 import PackageConfigSection from "@/components/packageConvert/PackageConfiguration";
-import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchAddonsByService,
+  fetchServices,
+} from "@/store/actions/services/ServiceAction";
 import { AppDispatch, RootState } from "@/store/Store";
-
-import CustomSkeletonLoader from "@/components/common/CustomSkeletonLoader";
-import { ServiceType } from "@/store/actions/services/services.action";
-import { fetchServices } from "@/store/actions/services/ServiceAction";
+import color from "@/themes/Colors.themes";
+import {
+  fontSizes,
+  windowHeight,
+  windowWidth,
+} from "@/themes/Constants.themes";
+import fonts from "@/themes/Fonts.themes";
+import React, { useEffect, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function PackageConvert() {
   const dispatch = useDispatch<AppDispatch>();
-  const {
-    data: serviceList,
-    loading: serviceLoading,
-    error,
-  } = useSelector((state: RootState) => state.services);
+  const finalPayable = useSelector(
+    (state: RootState) => state.orderPayment.finalPayable
+  );
+  const { data: serviceList } = useSelector(
+    (state: RootState) => state.services
+  );
+  const { data: addonList, loading: addonLoading } = useSelector(
+    (state: RootState) => state.addons
+  );
 
   const [service, setService] = useState<string | null>(null);
   const [variant, setVariant] = useState<string | null>(null);
-  const [addons, setAddons] = useState<any[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [serviceOpen, setServiceOpen] = useState(false);
   const [variantOpen, setVariantOpen] = useState(false);
 
-  // Fetch services once
   useEffect(() => {
     dispatch(fetchServices());
-  }, [dispatch]);
+  }, []);
 
-  // 🔹 Static variants
+  useEffect(() => {
+    if (service && variant) {
+      dispatch(fetchAddonsByService(service, variant));
+    }
+  }, [service, variant]);
+
   const variants = [
     { label: "Hatchback", value: "Hatchback" },
     { label: "Compact SUV", value: "Compact SUV" },
@@ -56,80 +63,28 @@ export default function PackageConvert() {
     { label: "7 Seater", value: "7 Seater" },
   ];
 
-  // 🔹 Filter addons based on service + variant
-  useEffect(() => {
-    if (service && variant && serviceList.length > 0) {
-      const selectedService: ServiceType | undefined = serviceList.find(
-        (s) => s.name === service
-      );
-
-      if (selectedService) {
-        const filteredAddons =
-          selectedService.addons
-            ?.map((addon) => {
-              const match = addon.variant.find(
-                (v) => v.vehicle_type === variant
-              );
-              return match
-                ? {
-                    id: addon.id,
-                    addon_name: addon.addon_name,
-                    actual_price: match.actual_price,
-                    // display_price: match.display_price,
-                  }
-                : null;
-            })
-            .filter(Boolean) || [];
-
-        setAddons(filteredAddons as any[]);
-      }
-    } else {
-      setAddons([]);
-    }
-  }, [service, variant, serviceList]);
-
-  const onServiceOpen = useCallback(() => setVariantOpen(false), []);
-  const onVariantOpen = useCallback(() => setServiceOpen(false), []);
-
   const toggleSelection = (id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
 
-  const total = addons.reduce(
+  const total = addonList.reduce(
     (sum, item) =>
-      sum + (selectedIds.includes(item.id) ? item.actual_price || 0 : 0),
+      sum +
+      (selectedIds.includes(item.id)
+        ? item.variant?.[0]?.actual_price || 0
+        : 0),
     0
   );
+
+  const grandtotal = total + finalPayable;
+  console.log("grandtotal", grandtotal);
 
   const handleSave = () => {
     setIsSubmitting(true);
     setTimeout(() => setIsSubmitting(false), 700);
   };
-
-  if (serviceLoading) {
-    return (
-      <View style={styles.loaderContainer}>
-        {[1, 2, 3].map((i) => (
-          <CustomSkeletonLoader
-            key={i}
-            dWidth="90%"
-            dHeight={windowHeight(6)}
-            radius={windowWidth(3)}
-          />
-        ))}
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.loaderContainer}>
-        <Text style={{ color: color.red }}>Error: {error}</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.mainContainer}>
@@ -142,9 +97,7 @@ export default function PackageConvert() {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
-          nestedScrollEnabled={true}
         >
-          {/* ✅ Service & Variant dropdowns */}
           <PackageConfigSection
             serviceOpen={serviceOpen}
             variantOpen={variantOpen}
@@ -157,16 +110,19 @@ export default function PackageConvert() {
             variants={variants}
             setServiceOpen={setServiceOpen}
             setVariantOpen={setVariantOpen}
-            onServiceOpen={onServiceOpen}
-            onVariantOpen={onVariantOpen}
+            onServiceOpen={() => setVariantOpen(false)}
+            onVariantOpen={() => setServiceOpen(false)}
             setService={setService}
             setVariant={setVariant}
           />
 
-          {/* ✅ Addons */}
           <AddonSection
-            addons={addons}
-            isLoading={false}
+            addons={addonList.map((a) => ({
+              id: a.id,
+              addon_name: a.addon_name,
+              actual_price: a.variant?.[0]?.actual_price || 0,
+            }))}
+            isLoading={addonLoading}
             selectedIds={selectedIds}
             toggleSelection={toggleSelection}
             service={service}
@@ -174,18 +130,10 @@ export default function PackageConvert() {
           />
         </ScrollView>
 
-        {/* ✅ Footer - same design */}
         <View style={styles.footer}>
           <View style={styles.totalBox}>
-            <View>
-              <Text style={styles.totalLabel}>Total Payable</Text>
-              <Text style={styles.totalSubLabel}>
-                {selectedIds.length} addons selected
-              </Text>
-            </View>
-            <Text style={styles.totalValue}>
-              ₹{Math.max(total, 0).toLocaleString()}
-            </Text>
+            <Text style={styles.totalLabel}>Total Payable</Text>
+            <Text style={styles.totalValue}>₹{grandtotal}</Text>
           </View>
 
           <Button

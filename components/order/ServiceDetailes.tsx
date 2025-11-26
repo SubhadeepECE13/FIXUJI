@@ -1,218 +1,262 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import color from "@/themes/Colors.themes";
+// import { RootState } from "@/store/Store";
+// import { ServiceBooking } from "@/store/actions/orders/orderDetailesAction";
+// import {
+//   removeAddon,
+//   setFinalPayable,
+// } from "@/store/reducers/services/orderPaymentSlice";
+// import color from "@/themes/Colors.themes";
+// import {
+//   fontSizes,
+//   windowHeight,
+//   windowWidth,
+// } from "@/themes/Constants.themes";
+// import fonts from "@/themes/Fonts.themes";
+// import { MaterialIcons } from "@expo/vector-icons";
+// import React from "react";
+// import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+// import { Divider } from "react-native-paper";
+// import { useDispatch, useSelector } from "react-redux";
+// import AddonSuggestionCard from "./VehicleCard";
+
+// interface Props {
+//   data: ServiceBooking["data"];
+// }
+
+// const ServiceDetails: React.FC<Props> = ({ data }) => {
+//   const dispatch = useDispatch();
+//   const selectedAddons = useSelector(
+//     (state: RootState) => state.orderPayment.selectedAddons
+//   );
+
+//   const basePrice = Number(data?.booking?.variant?.actual_price || 0);
+//   const finalPayable =
+//     basePrice + selectedAddons.reduce((s, a) => s + a.price, 0);
+
+//   React.useEffect(() => {
+//     dispatch(setFinalPayable(finalPayable));
+//   }, [finalPayable]);
+
+//   return (
+//     <View style={styles.card}>
+//       <Text style={styles.title}>Package Summary</Text>
+
+//       <View style={styles.row}>
+//         <Text style={styles.label}>{data?.booking?.service?.name}</Text>
+//         <Text style={styles.priceText}>₹{basePrice}</Text>
+//       </View>
+
+//       {selectedAddons.length > 0 && (
+//         <View style={{ marginTop: 15 }}>
+//           <Text style={styles.sectionHeading}>Added Add-ons</Text>
+//           <Divider style={{ marginBottom: windowHeight(2) }} />
+
+//           {selectedAddons.map((item) => (
+//             <View key={item.id} style={styles.addedCard}>
+//               <Text style={styles.addonName}>{item.name}</Text>
+
+//               <View style={styles.addonRight}>
+//                 <Text style={styles.priceText}>₹{item.price}</Text>
+
+//                 <TouchableOpacity
+//                   onPress={() => dispatch(removeAddon(item.id))}
+//                   style={styles.iconBox}
+//                   activeOpacity={0.6}
+//                 >
+//                   <MaterialIcons
+//                     name="delete-outline"
+//                     size={15}
+//                     color="#ff4d4d"
+//                   />
+//                 </TouchableOpacity>
+//               </View>
+//             </View>
+//           ))}
+//         </View>
+//       )}
+
+//       {/* <View style={styles.totalBlock}>
+//         <Text style={styles.totalLabel}>Final Payable</Text>
+//         <Text style={styles.totalPrice}>₹{finalPayable}</Text>
+//       </View> */}
+
+//       <AddonSuggestionCard suggestedAddons={data.suggestedAddons || []} />
+//     </View>
+//   );
+// };
+
+// export default ServiceDetails;
+import { RootState } from "@/store/Store";
 import { ServiceBooking } from "@/store/actions/orders/orderDetailesAction";
 import {
+  addAddon,
+  removeAddon,
+  setFinalPayable,
+} from "@/store/reducers/services/orderPaymentSlice";
+import color from "@/themes/Colors.themes";
+import {
+  fontSizes,
   windowHeight,
   windowWidth,
-  fontSizes,
 } from "@/themes/Constants.themes";
 import fonts from "@/themes/Fonts.themes";
-import Button from "../common/Button";
-import { router } from "expo-router";
-import CardHeader from "../common/CardHeader";
+import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import AddonSuggestionCard from "./VehicleCard";
+import { MaterialIcons } from "@expo/vector-icons";
+import { Divider } from "react-native-paper";
 
 interface Props {
   data: ServiceBooking["data"];
 }
 
 const ServiceDetails: React.FC<Props> = ({ data }) => {
-  const service = data?.service;
-  const addons = data?.addons || [];
-  const charges = data?.charges || [];
-  const discount = data?.discount || 0;
-  const total = data?.total || 0;
+  const dispatch = useDispatch();
+  const selectedAddons = useSelector(
+    (state: RootState) => state.orderPayment.selectedAddons
+  );
+  const addons = data.booking.addons;
 
-  const renderTwoColumnList = (items: any[], key1: string, key2: string) => {
-    return (
-      <View style={styles.listContainer}>
-        {items.map((item, index) => (
-          <View key={index} style={styles.listRow}>
-            <Text style={styles.listLabel}>{item[key1]}</Text>
-            <Text style={styles.listValue}>₹{item[key2]}</Text>
-          </View>
-        ))}
-      </View>
-    );
-  };
+  const basePrice = Number(data?.booking?.variant?.actual_price || 0);
+  const finalPayable =
+    basePrice + selectedAddons.reduce((s, a) => s + a.price, 0);
+
+  // Load API addons initially only once
+  React.useEffect(() => {
+    if (!data?.booking?.addons) return;
+
+    data.booking.addons.forEach((addon) => {
+      // 🔥 Best possible actual_price extraction logic
+      const price =
+        Number(addon.actual_price) ||
+        Number(addon.variant?.[0]?.actual_price) ||
+        Number(
+          addon.variant?.find((v: { vehicle_type: any }) => v.vehicle_type)
+            ?.actual_price
+        ) ||
+        0;
+
+      dispatch(addAddon({ id: addon.id, name: addon.addon_name, price }));
+    });
+  }, []);
+
+  // Update price in redux every change
+  React.useEffect(() => {
+    dispatch(setFinalPayable(finalPayable));
+  }, [finalPayable]);
 
   return (
     <View style={styles.card}>
-      <CardHeader
-        title="Package Details"
-        buttonTitle="Convert"
-        onButtonPress={() =>
-          router.push({
-            pathname: "/packageConvert/[order_id]",
-            params: {
-              order_id: String(data.orderDocId),
-              serviceType: data?.service?.name || "",
-              variant: data?.variant.vehicle_type || "",
-              discount: String(data?.discount || 0),
-              addons: JSON.stringify(data?.addons || []),
-              total: String(data?.total || 0),
-              booking: JSON.stringify(data),
-            },
-          })
-        }
-      />
+      <Text style={styles.title}>Package Summary</Text>
 
-      {/* Main Service */}
-      <View style={styles.mainServiceRow}>
-        <Text style={styles.serviceLabel}>{service?.name || "Service"}</Text>
-        <Text style={styles.serviceValue}>₹{data?.variant?.actual_price}</Text>
+      <View style={styles.row}>
+        <Text style={styles.label}>{data?.booking?.service?.name}</Text>
+        <Text style={styles.priceText}>₹{basePrice}</Text>
       </View>
 
-      {/* Add-ons */}
-      {addons.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Add-ons</Text>
-          {renderTwoColumnList(
-            Array.isArray(addons) ? addons : [],
-            "addon_name",
-            "actual_price"
-          )}
-        </View>
-      )}
-      {charges.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Additional Charges</Text>
-          {renderTwoColumnList(charges, "charge_type", "charge_amount")}
+      {/* 🟩 DISPLAY USER SELECTED ADDONS */}
+      {selectedAddons.length > 0 && (
+        <View style={{ marginTop: 15 }}>
+          <Text style={styles.sectionHeading}>Added Add-ons</Text>
+          <Divider style={{ marginBottom: windowHeight(2) }} />
+
+          {selectedAddons.map((item) => (
+            <View key={item.id} style={styles.addedCard}>
+              <Text style={styles.addonName}>{item.name}</Text>
+
+              <View style={styles.addonRight}>
+                <Text style={styles.priceText}>₹{item.price}</Text>
+
+                <TouchableOpacity
+                  onPress={() => dispatch(removeAddon(item.id))}
+                  style={styles.iconBox}
+                >
+                  <MaterialIcons
+                    name="delete-outline"
+                    size={16}
+                    color="#ff4d4d"
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
         </View>
       )}
 
-      {/* Discount */}
-      {discount > 0 && (
-        <View style={styles.summaryRow}>
-          <Text style={[styles.summaryLabel, { color: "#f44336" }]}>
-            Discount
-          </Text>
-          <Text style={[styles.summaryValue, { color: "#f44336" }]}>
-            - ₹{discount}
-          </Text>
-        </View>
-      )}
-
-      <View style={styles.divider} />
-
-      {/* Grand Total */}
-      {total > 0 && (
-        <View style={[styles.summaryRow, styles.totalRow]}>
-          <Text style={styles.totalLabel}>Grand Total</Text>
-          <Text style={styles.totalValue}>₹{total}</Text>
-        </View>
-      )}
+      {/* 🟦 Suggest more addons */}
+      <AddonSuggestionCard suggestedAddons={data.suggestedAddons || []} />
     </View>
   );
 };
-
 export default ServiceDetails;
-
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: color.whiteColor,
-    borderRadius: windowWidth(3),
+    backgroundColor: "white",
+    borderRadius: windowWidth(4),
     padding: windowWidth(4),
-    marginHorizontal: windowWidth(3),
-    marginVertical: windowHeight(1),
+    margin: windowWidth(3),
     shadowColor: "#000",
     shadowOpacity: 0.05,
-    shadowRadius: windowWidth(1),
-    elevation: 2,
+    elevation: 3,
   },
-  cardTitle: {
-    fontSize: fontSizes.md,
+  title: {
     fontFamily: fonts.bold,
-    color: color.primary,
-    marginBottom: windowHeight(1),
-  },
-
-  mainServiceRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: windowHeight(0.5),
-  },
-  serviceLabel: {
     fontSize: fontSizes.sm,
-    fontFamily: fonts.semiBold,
-    color: color.appHeaderText,
-  },
-  serviceValue: {
-    fontSize: fontSizes.rg,
     color: color.primary,
+    marginBottom: 10,
   },
-
-  divider: {
-    height: 1,
-    backgroundColor: "#eee",
-    marginVertical: windowHeight(1),
-  },
-
-  section: {
-    marginBottom: windowHeight(1),
-  },
-  sectionTitle: {
-    fontSize: fontSizes.sm,
+  row: { flexDirection: "row", justifyContent: "space-between" },
+  sectionHeading: {
     fontFamily: fonts.bold,
-    color: color.primary,
-    marginBottom: windowHeight(0.5),
+    fontSize: fontSizes.sm,
+    marginBottom: 10,
   },
-
-  listContainer: {},
-  listRow: {
+  addedCard: {
+    marginBottom: 10,
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: windowHeight(0.3),
   },
-  listLabel: {
-    fontSize: fontSizes.sm,
-    fontFamily: fonts.medium,
-    color: color.regularText,
-    flex: 0.6,
-  },
-  listValue: {
-    fontSize: fontSizes.sm,
-    color: color.primary,
-    flex: 0.4,
-    textAlign: "right",
-  },
-
-  summaryRow: {
+  addonName: { fontFamily: fonts.medium, fontSize: fontSizes.xm },
+  addonRight: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: windowHeight(0.5),
-  },
-  summaryLabel: {
-    fontSize: fontSizes.sm,
-    fontFamily: fonts.semiBold,
-  },
-  summaryValue: {
-    fontSize: fontSizes.sm,
-  },
-
-  totalRow: {
-    marginTop: windowHeight(0.5),
-  },
-  totalLabel: {
-    fontSize: fontSizes.sm,
-    fontFamily: fonts.bold,
-    color: "#2e7d32",
-  },
-  totalValue: {
-    fontSize: fontSizes.md,
-    color: "#2e7d32",
-    fontWeight: "800",
-  },
-  detailsBtn: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    gap: windowHeight(2),
     alignItems: "center",
-    marginBottom: windowHeight(1.5),
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-    paddingBottom: windowHeight(0.5),
   },
-  convertText: {
-    fontSize: fontSizes.rg,
+  priceText: {
+    fontFamily: fonts.bold,
+    fontSize: fontSizes.sm,
+    color: color.primary,
+  },
+  removeBtn: {
+    color: "red",
+    fontWeight: "bold",
+    borderWidth: 1,
+    borderColor: "red",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  totalBlock: {
+    marginTop: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 5,
+  },
+  totalLabel: { fontFamily: fonts.bold, fontSize: fontSizes.md },
+  totalPrice: {
+    fontFamily: fonts.bold,
+    fontSize: fontSizes.xl,
+    color: "#2e7d32",
+  },
+  label: { fontFamily: fonts.medium },
+  iconBox: {
+    width: windowWidth(8),
+    height: windowHeight(3),
+    borderRadius: windowWidth(2),
+    borderWidth: 1,
+    borderColor: "#ff4d4d",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 0, 0, 0.05)",
   },
 });

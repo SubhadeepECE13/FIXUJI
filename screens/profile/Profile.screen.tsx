@@ -7,6 +7,7 @@ import { useAppSelector } from "@/store/Reduxhook";
 import Header from "@/components/common/Header";
 import FunctionCard from "@/components/profile/FuctionCard";
 import Card from "@/components/profile/Card";
+import SettingsCard from "@/components/profile/SettingsCard";
 
 const ProfileScreen = () => {
   const { user } = useAppSelector((state) => state.user);
@@ -17,6 +18,7 @@ const ProfileScreen = () => {
       <View style={[styles.container]}>
         <View style={styles.box1}>{user && <Card user={user} />}</View>
         <View style={styles.box2}>{user && <FunctionCard />}</View>
+        <View style={styles.box2}>{user && <SettingsCard />}</View>
       </View>
     </View>
   );
