@@ -56,6 +56,7 @@ interface Addon {
   addon_desc: string;
   vehicle_type: string;
   sort_order: number;
+  id: number;
 }
 
 interface ServiceDetails {
@@ -156,6 +157,7 @@ export interface SuggestedAddons {
   addon_type: string;
   addon_desc: string;
   sort_order?: number;
+  commission: number;
   recommended?: boolean;
   service_pack: string[];
   variant: AddonVariant[];
@@ -163,62 +165,60 @@ export interface SuggestedAddons {
 
 export interface ServiceBooking {
   data: {
-    booking: {
-      id: string;
-      service_name: string;
-      orderDocId: string;
-      service_color: string;
-      orderTimeStampts: {
-        created: Timestamp;
-        updated: Timestamp;
-      };
-      advancePayment?: {
-        paymentMode: String;
-        paymentDate: String;
-        advanceAmount: Number;
-      };
-
-      date: DateDetails;
-      tart_order_image: string;
-      userData: CustomerData;
-      isAppBooking: string;
-      distance: Distance;
-      addons: Addon;
-      discount: number;
-      charges: chargesDetails[];
-      vendorId: string;
-      vehicle: VehicleInfo;
-      customer_zone: string;
-      total: number;
-      startLocation: Location;
-      service_date: string;
-      vendor: VendorInfo;
-      referralCode: string;
-      variant: ServiceVariant;
-      customer_source: string;
-      startTime: string;
-      timeDifference: TimeDifference;
-      department: string;
-      reachedTime: Timestamp;
-      staff: StaffMember[];
-      history: OrderHistoryRecord[];
-      reachedLocation: Location;
-      lastUpdatedDate: Timestamp;
-      createdDate: Timestamp;
-      serviceMode: "DOORSTEP" | string;
-      user_id: string;
-      createdBy: string;
-      service: ServiceDetails;
-      captureImageList: string[];
-      bookingDate: Timestamp;
-      location: Address;
-      endTime: Timestamp;
-      couponCode: string;
-      order_id: string;
-      vendorCharges: number;
-      status: string;
-      eta: number;
+    id: string;
+    service_name: string;
+    orderDocId: string;
+    service_color: string;
+    orderTimeStampts: {
+      created: Timestamp;
+      updated: Timestamp;
     };
+    advancePayment?: {
+      paymentMode: String;
+      paymentDate: String;
+      advanceAmount: Number;
+    };
+
+    date: DateDetails;
+    tart_order_image: string;
+    userData: CustomerData;
+    isAppBooking: string;
+    distance: Distance;
+    addons: Addon[];
+    discount: number;
+    charges: chargesDetails[];
+    vendorId: string;
+    vehicle: VehicleInfo;
+    customer_zone: string;
+    total: number;
+    startLocation: Location;
+    service_date: string;
+    vendor: VendorInfo;
+    referralCode: string;
+    variant: ServiceVariant;
+    customer_source: string;
+    startTime: string;
+    timeDifference: TimeDifference;
+    department: string;
+    reachedTime: Timestamp;
+    staff: StaffMember[];
+    history: OrderHistoryRecord[];
+    reachedLocation: Location;
+    lastUpdatedDate: Timestamp;
+    createdDate: Timestamp;
+    serviceMode: "DOORSTEP" | string;
+    user_id: string;
+    createdBy: string;
+    service: ServiceDetails;
+    captureImageList: string[];
+    bookingDate: Timestamp;
+    location: Address;
+    endTime: Timestamp;
+    couponCode: string;
+    order_id: string;
+    vendorCharges: number;
+    status: string;
+    eta: number;
     suggestedAddons?: SuggestedAddons[];
   };
 }

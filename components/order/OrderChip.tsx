@@ -60,11 +60,14 @@ const Chip: React.FC<ChipProps> = ({
   backgroundColor,
   textColor,
 }) => {
-  const chipStyle = getChipStyle(label);
+  // const chipStyle = getChipStyle(label);
 
   // Use provided colors if passed, else fallback to internal style
-  const finalBackgroundColor = backgroundColor ?? chipStyle.backgroundColor;
-  const finalTextColor = textColor ?? chipStyle.textColor;
+  // const finalBackgroundColor = backgroundColor ?? chipStyle.backgroundColor;
+  // const finalTextColor = textColor ?? chipStyle.textColor;
+
+  const finalBackgroundColor = backgroundColor;
+  const finalTextColor = textColor;
 
   return (
     <View

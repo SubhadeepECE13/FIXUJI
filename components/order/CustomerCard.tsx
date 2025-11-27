@@ -1,32 +1,21 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
-import color from "@/themes/Colors.themes";
+import { useAppDispatch, useAppSelector } from "@/store/Reduxhook";
+import { sendLocation } from "@/store/actions/orders/OrderAction";
 import { ServiceBooking } from "@/store/actions/orders/orderDetailesAction";
+import color from "@/themes/Colors.themes";
 import {
+  fontSizes,
   windowHeight,
   windowWidth,
-  fontSizes,
 } from "@/themes/Constants.themes";
 import fonts from "@/themes/Fonts.themes";
-import AddressModal from "./AddressModal";
-import CustomModal from "@/components/common/CustomModal";
-import Geolocation from "react-native-geolocation-service";
-import { useAppDispatch, useAppSelector } from "@/store/Reduxhook";
-import {
-  fetchOrderDetailsByDocId,
-  sendLocation,
-} from "@/store/actions/orders/OrderAction";
-import { router, useLocalSearchParams } from "expo-router";
-import Button from "../common/Button";
-import UpdateCarDetailsModal from "./UpdateCarDetailesModal";
-import Toast from "react-native-toast-message";
 import * as ExpoLocation from "expo-location";
+import { useLocalSearchParams } from "expo-router";
+import React, { useState } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Toast from "react-native-toast-message";
+import Button from "../common/Button";
+import AddressModal from "./AddressModal";
+import UpdateCarDetailsModal from "./UpdateCarDetailesModal";
 interface Props {
   data: ServiceBooking["data"];
 }
@@ -38,21 +27,22 @@ const CustomerCard: React.FC<Props> = ({ data }) => {
   const dispatch = useAppDispatch();
   const { loading } = useAppSelector((state) => state.location);
   const user = useAppSelector((state) => state.user);
-  const isSameVendor = user?.user?.id === data.booking.vendorId;
-  const canShowReachedButton =
-    isSameVendor && data.booking.status === "ON_THE_WAY";
-  const customer = data.booking.userData;
-  const service = data.booking.service;
-  const customerAddress = data.booking.location;
+  const isSameVendor = user?.user?.id === data.vendorId;
+  console.log("VENDOR ID ...........>>>>>>>>>", data.vendorId);
+
+  const canShowReachedButton = isSameVendor && data.status === "ON_THE_WAY";
+  const customer = data.userData;
+  const service = data.service;
+  const customerAddress = data.location;
   const statusColor =
-    data.booking.status === "COMPLETED"
+    data.status === "COMPLETED"
       ? "#4CAF50"
-      : data.booking.status === "CANCELLED"
+      : data.status === "CANCELLED"
         ? "#F44336"
         : "#FFA000";
 
-  const formattedDate = data.booking.date?.full_date
-    ? new Date(data.booking.date.full_date).toLocaleDateString("en-US", {
+  const formattedDate = data.date?.full_date
+    ? new Date(data.date.full_date).toLocaleDateString("en-US", {
         day: "2-digit",
         month: "short",
         weekday: "short",
@@ -87,24 +77,24 @@ const CustomerCard: React.FC<Props> = ({ data }) => {
       isAddress: true,
     },
 
-    { label: "Order ID", value: data.booking.order_id },
+    { label: "Order ID", value: data.order_id },
     {
       label: "Status",
-      value: formatStatus(data.booking.status),
+      value: formatStatus(data.status),
       color: statusColor,
     },
 
     { label: "Booking Date", value: formattedDate },
     {
       label: "Booking Time",
-      value: formatTimeToAMPM(data.booking.date?.time) || "N/A",
+      value: formatTimeToAMPM(data.date?.time) || "N/A",
     },
   ];
   const params = useLocalSearchParams<{ order_id: string }>();
   const orderDocId = params.order_id;
   console.log("for reached api order is", orderDocId);
 
-  const orderSequenceId = data.booking.order_id;
+  const orderSequenceId = data.order_id;
 
   const handleSendLocation = async (): Promise<void> => {
     try {

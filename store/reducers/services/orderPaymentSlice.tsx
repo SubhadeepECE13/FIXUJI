@@ -1,38 +1,62 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface PaymentState {
-  finalPayable: number;
-  selectedAddons: { id: string; name: string; price: number }[];
+interface AddonType {
+  id: string;
+  name: string;
+  price: number;
+  realId: string;
 }
 
-const initialState: PaymentState = {
-  finalPayable: 0,
-  selectedAddons: [],
+interface OrderPaymentState {
+  finalPayable: Record<string, number>;
+  selectedAddons: Record<string, AddonType[]>;
+}
+
+const initialState: OrderPaymentState = {
+  finalPayable: {},
+  selectedAddons: {},
 };
 
 const orderPaymentSlice = createSlice({
   name: "orderPayment",
   initialState,
   reducers: {
-    setFinalPayable: (state, action: PayloadAction<number>) => {
-      state.finalPayable = action.payload;
+    setFinalPayable: (
+      state,
+      action: PayloadAction<{ orderId: string; amount: number }>
+    ) => {
+      state.finalPayable[action.payload.orderId] = action.payload.amount;
     },
+
+    loadInitialAddons: (
+      state,
+      action: PayloadAction<{ orderId: string; addons: AddonType[] }>
+    ) => {
+      state.selectedAddons[action.payload.orderId] = action.payload.addons;
+    },
+
     addAddon: (
       state,
-      action: PayloadAction<{ id: string; name: string; price: number }>
+      action: PayloadAction<{ orderId: string; addon: AddonType }>
     ) => {
-      if (!state.selectedAddons.find((i) => i.id === action.payload.id)) {
-        state.selectedAddons.push(action.payload);
+      const list = state.selectedAddons[action.payload.orderId] || [];
+      if (!list.some((item) => item.id === action.payload.addon.id)) {
+        list.push(action.payload.addon);
       }
+      state.selectedAddons[action.payload.orderId] = list;
     },
-    removeAddon: (state, action: PayloadAction<string>) => {
-      state.selectedAddons = state.selectedAddons.filter(
-        (item) => item.id !== action.payload
-      );
+
+    removeAddon: (
+      state,
+      action: PayloadAction<{ orderId: string; addonId: string }>
+    ) => {
+      state.selectedAddons[action.payload.orderId] = (
+        state.selectedAddons[action.payload.orderId] || []
+      ).filter((i) => i.id !== action.payload.addonId);
     },
   },
 });
 
-export const { setFinalPayable, addAddon, removeAddon } =
+export const { setFinalPayable, addAddon, removeAddon, loadInitialAddons } =
   orderPaymentSlice.actions;
 export default orderPaymentSlice.reducer;

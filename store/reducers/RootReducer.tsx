@@ -10,6 +10,7 @@ import serviceReducer from "./services/serviceSlice";
 import uploadCarImageReducer from "./carImage/uploadImageSlice";
 import addonReducer from "./services/addOnsSlice";
 import orderPaymentSliceReducer from "./services/orderPaymentSlice";
+import updateServiceReducer from "./services/updateServiceSlice";
 const rootReducer = combineReducers({
   user: userReducer,
   order: orderReducer,
@@ -22,6 +23,7 @@ const rootReducer = combineReducers({
   carImageUpload: uploadCarImageReducer,
   addons: addonReducer,
   orderPayment: orderPaymentSliceReducer,
+  updateService: updateServiceReducer,
 });
 
 export default rootReducer;
