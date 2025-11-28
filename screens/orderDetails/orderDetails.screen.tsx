@@ -1,6 +1,7 @@
 import { fetchOrderDetailsByDocId } from "@/store/actions/orders/OrderAction";
+import { updateServiceDetails } from "@/store/actions/services/ServiceAction";
 import { useLocalSearchParams } from "expo-router";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -12,147 +13,189 @@ import { AppDispatch, RootState } from "@/store/Store";
 import { commonStyles } from "@/styles/common.style";
 import color from "@/themes/Colors.themes";
 import { windowHeight, windowWidth } from "@/themes/Constants.themes";
+import Button from "@/components/common/Button";
+import fonts from "@/themes/Fonts.themes";
+import Toast from "react-native-toast-message";
 
-const Loader = () => {
-  return (
-    <View style={styles.centered}>
-      <CustomSkeletonLoader
-        dWidth={"100%"}
-        dHeight={windowHeight(15)}
-        radius={windowWidth(1)}
-      />
-      <CustomSkeletonLoader
-        dWidth={windowWidth(95)}
-        dHeight={windowHeight(25)}
-        radius={windowWidth(5)}
-      />
-      <CustomSkeletonLoader
-        dWidth={windowWidth(95)}
-        dHeight={windowHeight(35)}
-        radius={windowWidth(5)}
-      />
-      <CustomSkeletonLoader
-        dWidth={windowWidth(95)}
-        dHeight={windowHeight(35)}
-        radius={windowWidth(5)}
-      />
-    </View>
-  );
-};
+const Loader = () => (
+  <View style={styles.centered}>
+    <CustomSkeletonLoader
+      dWidth={"100%"}
+      dHeight={windowHeight(15)}
+      radius={windowWidth(1)}
+    />
+    <CustomSkeletonLoader
+      dWidth={windowWidth(95)}
+      dHeight={windowHeight(25)}
+      radius={windowWidth(5)}
+    />
+    <CustomSkeletonLoader
+      dWidth={windowWidth(95)}
+      dHeight={windowHeight(35)}
+      radius={windowWidth(5)}
+    />
+    <CustomSkeletonLoader
+      dWidth={windowWidth(95)}
+      dHeight={windowHeight(35)}
+      radius={windowWidth(5)}
+    />
+  </View>
+);
 
 const OrderDetailsScreen = () => {
   const { order_id } = useLocalSearchParams();
   const dispatch = useDispatch<AppDispatch>();
+  const [saving, setSaving] = useState(false);
 
   const { orderDetails, loading, error } = useSelector(
     (state: RootState) => state.orderDetails
   );
 
+  const selectedAddons =
+    useSelector(
+      (state: RootState) =>
+        state.orderPayment.selectedAddons[order_id as string]
+    ) || [];
+
   useEffect(() => {
     if (order_id) {
       dispatch(fetchOrderDetailsByDocId(order_id as string));
     }
-  }, [dispatch, order_id]);
+  }, [order_id]);
 
-  if (error) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.errorText}>Error: {error}</Text>
-      </View>
-    );
-  }
+  if (!orderDetails) return <View style={styles.centered}></View>;
 
-  if (!orderDetails) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.emptyText}>No order details found.</Text>
-      </View>
-    );
-  }
+  const data = orderDetails.data;
 
-  const details = orderDetails.data;
+  const basePrice = Number(data?.variant?.actual_price || 0);
+  const addonTotal = selectedAddons.reduce((sum, a) => sum + a.price, 0);
+  const chargeTotal = Array.isArray(data?.charges)
+    ? data.charges.reduce((sum, c) => sum + Number(c.charge_amount || 0), 0)
+    : 0;
+
+  const discount = Number(data?.discount || 0);
+
+  const finalPrice = basePrice + addonTotal;
+  const grandTotal = finalPrice + chargeTotal - discount;
+
+  const handleSave = async () => {
+    setSaving(true);
+
+    const payload = {
+      addons: selectedAddons.map((a) => a.id),
+      variant: data?.variant?.vehicle_type,
+      service: data?.service?.name,
+      total: grandTotal,
+    };
+
+    try {
+      await dispatch(
+        updateServiceDetails(order_id as string, {
+          ...payload,
+          // Ensure service is always a string (never null)
+          service: payload.service ?? "",
+        })
+      );
+
+      Toast.show({
+        type: "success",
+        text1: "Updated Successfully",
+        text2: "Order details updated.",
+      });
+
+      dispatch(fetchOrderDetailsByDocId(order_id as string));
+    } catch {
+      Toast.show({
+        type: "error",
+        text1: "Update Failed",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <View style={[{ flex: 1 }, commonStyles.grayContainer]}>
       <Header title="Order Details" isBack />
-      <ScrollView showsVerticalScrollIndicator={false}>
+
+      {/* Scrollable Content */}
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: windowHeight(6) }}
+        showsVerticalScrollIndicator={false}
+      >
         {loading ? (
           Loader()
         ) : (
           <>
-            {/* {details?.status === "IN_PROGRESS" ? (
-              <ETATimer
-                startTime={details?.startTime ?? new Date().toISOString()}
-                etaMinutes={details?.eta ?? 15}
-                order_id={details.order_id}
-                status={details?.status}
-              />
-            ) : (
-              <></>
-            )} */}
-            <CustomerCard data={orderDetails.data} />
-            <BookingSummaryCard data={orderDetails.data} />
-            {/* <VehicleCard data={orderDetails.data} /> */}
+            <CustomerCard data={data} />
+            <BookingSummaryCard data={data} />
           </>
         )}
       </ScrollView>
+
+      <View style={styles.footer}>
+        <View style={styles.totalBox}>
+          <Text style={styles.totalLabel}>Final Payable</Text>
+          <Text style={styles.totalValue}>₹{grandTotal}</Text>
+        </View>
+
+        <Button
+          title={saving ? "UPDATING..." : "Save"}
+          height={windowHeight(6)}
+          backgroundColor={color.primary}
+          onPress={handleSave}
+          disabled={saving}
+          isLoading={saving}
+        />
+      </View>
     </View>
   );
 };
 
 export default OrderDetailsScreen;
 
-export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: color.bgGray,
-    paddingHorizontal: windowWidth(3),
-  },
-
+const styles = StyleSheet.create({
   centered: {
     alignItems: "center",
     justifyContent: "center",
     gap: windowHeight(2),
     paddingVertical: windowHeight(3),
   },
-
-  section: {
-    marginBottom: windowHeight(2.5),
-    paddingVertical: windowHeight(1.5),
-    paddingHorizontal: windowWidth(4),
-    backgroundColor: color.fadedPrimary,
-    borderRadius: windowWidth(3),
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: windowWidth(1.5),
-    elevation: 2,
-  },
-
-  sectionTitle: {
-    fontWeight: "bold",
-    fontSize: windowWidth(4.2),
-    color: color.primary,
-    marginBottom: windowHeight(1),
-  },
-
-  detailText: {
-    fontSize: windowWidth(3.8),
-    color: color.blue,
-  },
-
-  loadingText: {
-    marginTop: windowHeight(1),
-    color: color.primary,
-    fontSize: windowWidth(3.8),
-  },
-
-  errorText: {
-    color: "red",
-    fontSize: windowWidth(3.8),
-  },
-
   emptyText: {
-    color: color.gray,
-    fontSize: windowWidth(3.8),
+    color: "#999",
+    fontSize: 16,
+  },
+
+  footer: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    backgroundColor: color.whiteColor,
+    paddingHorizontal: windowWidth(5),
+    paddingVertical: windowHeight(2),
+    borderTopLeftRadius: windowWidth(5),
+    borderTopRightRadius: windowWidth(5),
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    elevation: 10,
+  },
+
+  totalBox: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: windowHeight(1.5),
+  },
+
+  totalLabel: {
+    fontFamily: fonts.bold,
+    fontSize: 16,
+    color: color.primary,
+  },
+
+  totalValue: {
+    fontFamily: fonts.bold,
+    fontSize: 20,
+    color: color.primary,
   },
 });

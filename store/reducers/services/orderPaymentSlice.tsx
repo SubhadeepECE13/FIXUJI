@@ -4,7 +4,7 @@ interface AddonType {
   id: string;
   name: string;
   price: number;
-  realId: string;
+  // realId: string;
 }
 
 interface OrderPaymentState {

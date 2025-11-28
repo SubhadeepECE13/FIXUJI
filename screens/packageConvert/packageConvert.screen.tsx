@@ -27,9 +27,9 @@ import { useDispatch, useSelector } from "react-redux";
 
 export default function PackageConvert() {
   const dispatch = useDispatch<AppDispatch>();
-  const finalPayable = useSelector(
-    (state: RootState) => state.orderPayment.finalPayable
-  );
+  // const finalPayable = useSelector(
+  //   (state: RootState) => state.orderPayment.finalPayable
+  // );
   const { data: serviceList } = useSelector(
     (state: RootState) => state.services
   );
@@ -78,8 +78,8 @@ export default function PackageConvert() {
     0
   );
 
-  const grandtotal = total + finalPayable;
-  console.log("grandtotal", grandtotal);
+  // const grandtotal = total + Number(finalPayable);
+  console.log("grandtotal", total);
 
   const handleSave = () => {
     setIsSubmitting(true);
@@ -133,7 +133,7 @@ export default function PackageConvert() {
         <View style={styles.footer}>
           <View style={styles.totalBox}>
             <Text style={styles.totalLabel}>Total Payable</Text>
-            <Text style={styles.totalValue}>₹{grandtotal}</Text>
+            <Text style={styles.totalValue}>₹{total}</Text>
           </View>
 
           <Button

@@ -29,14 +29,6 @@ const Card = ({
   Order: Order;
   settings: SettingsResponse;
 }) => {
-  const combinedOrder = {
-    userData: userData.userData,
-    vendor: vendor.vendor,
-    department: userData.department || "",
-    user: user,
-    Order: Order,
-    settings: settings,
-  };
   console.log("main user id ", user.id);
   const bookingDate = new Date(userData.date.full_date);
   const today = new Date();
@@ -66,7 +58,10 @@ const Card = ({
                     label={userData.service_name}
                     backgroundColor={userData.service_color}
                   />
-                  <Chip label={userData.variant.vehicle_type} />
+                  <Chip
+                    label={String(userData.variant)}
+                    backgroundColor={userData.service_color}
+                  />
                   <Text style={styles.status}>{Order.customer_zone}</Text>
                 </View>
               </View>
@@ -81,14 +76,13 @@ const Card = ({
               <Text style={styles.technicianName}>
                 {vendor.vendor.vendor_name}
               </Text>
-
-              <Text style={styles.priceText}>
+              {/* <Text style={styles.priceText}>
                 {new Intl.NumberFormat("en-IN", {
                   style: "currency",
                   currency: "INR",
                   minimumFractionDigits: 0,
-                }).format(vendor.variant.actual_price)}
-              </Text>
+                }).format(Number(vendor?.variant?.actual_price || 0))}
+              </Text> */}
             </View>
           </View>
 
@@ -157,6 +151,7 @@ const styles = StyleSheet.create({
     gap: windowHeight(1),
     alignItems: "center",
     justifyContent: "space-between",
+    flexWrap: "wrap",
   },
   rightBox: {
     alignItems: "flex-end",

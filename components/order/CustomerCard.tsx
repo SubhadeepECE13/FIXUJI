@@ -23,6 +23,7 @@ interface Props {
 const CustomerCard: React.FC<Props> = ({ data }) => {
   const [isAddressModalOpen, setAddressModalOpen] = useState(false);
   const [isCarModalOpen, setCarModalOpen] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   const dispatch = useAppDispatch();
   const { loading } = useAppSelector((state) => state.location);
@@ -96,37 +97,74 @@ const CustomerCard: React.FC<Props> = ({ data }) => {
 
   const orderSequenceId = data.order_id;
 
-  const handleSendLocation = async (): Promise<void> => {
+  // const handleSendLocation = async (): Promise<void> => {
+  //   try {
+  //     let { status } = await ExpoLocation.requestForegroundPermissionsAsync();
+  //     if (status !== "granted") {
+  //       Toast.show({
+  //         type: "error",
+  //         text1: "Permission Denied",
+  //         text2: "Please enable location access in your app settings.",
+  //       });
+  //       return;
+  //     }
+
+  //     const location = await ExpoLocation.getCurrentPositionAsync({
+  //       accuracy: ExpoLocation.Accuracy.High,
+  //     });
+  //     console.log("Got location:", location.coords);
+
+  //     dispatch(
+  //       sendLocation(
+  //         location.coords.latitude,
+  //         location.coords.longitude,
+  //         orderDocId
+  //       )
+  //     );
+  //   } catch (err: any) {
+  //     console.error("Error in handleSendLocation:", err);
+  //     Toast.show({
+  //       type: "error",
+  //       text1: "Location Error",
+  //       text2: err.message || "Could not get your location.",
+  //     });
+  //   }
+  // };
+
+  const handleSendLocation = async () => {
     try {
+      setIsSending(true); // 🔥 start loading
+
       let { status } = await ExpoLocation.requestForegroundPermissionsAsync();
       if (status !== "granted") {
         Toast.show({
           type: "error",
           text1: "Permission Denied",
-          text2: "Please enable location access in your app settings.",
+          text2: "Please enable location access in settings.",
         });
+        setIsSending(false);
         return;
       }
 
       const location = await ExpoLocation.getCurrentPositionAsync({
         accuracy: ExpoLocation.Accuracy.High,
       });
-      console.log("Got location:", location.coords);
 
-      dispatch(
+      await dispatch(
         sendLocation(
           location.coords.latitude,
           location.coords.longitude,
           orderDocId
         )
-      );
+      ); // 🔥 wait for refetch and success
     } catch (err: any) {
-      console.error("Error in handleSendLocation:", err);
       Toast.show({
         type: "error",
-        text1: "Location Error",
-        text2: err.message || "Could not get your location.",
+        text1: "Failed",
+        text2: err.message || "Something went wrong",
       });
+    } finally {
+      setIsSending(false); // 🔥 stop loading
     }
   };
 
@@ -170,6 +208,8 @@ const CustomerCard: React.FC<Props> = ({ data }) => {
           iconName="map-marker-check"
           iconSize={22}
           isIcon
+          isLoading={isSending}
+          disabled={isSending}
         />
       )}
 
@@ -184,7 +224,6 @@ const CustomerCard: React.FC<Props> = ({ data }) => {
         orderId={orderSequenceId}
         orderDocId={orderDocId}
         onSuccess={() => {
-          // setCarModalOpen(false);
           setTimeout(() => {
             handleSendLocation();
           }, 100);

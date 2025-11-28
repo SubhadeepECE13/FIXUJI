@@ -142,11 +142,36 @@ export const fetchOrderDetailsByDocId =
     }
   };
 
+// export const sendLocation =
+//   (latitude: number, longitude: number, orderDocId: string) =>
+//   async (dispatch: AppDispatch) => {
+//     try {
+//       dispatch(sendLocationStart());
+//       const response = await appAxios.post(
+//         `api/v1/updateReachedAction/${orderDocId}`,
+//         {
+//           latitude,
+//           longitude,
+//         }
+//       );
+//       dispatch(sendLocationSuccess(response.data));
+//       Toast.show({
+//         type: "success",
+//         text1: "Location Sent Successfully",
+//       });
+
+//       dispatch(triggerOrderRefetch(orderDocId));
+//     } catch (error: any) {
+//       dispatch(sendLocationFailure(error.message || "Failed to send location"));
+//     }
+//   };
+
 export const sendLocation =
   (latitude: number, longitude: number, orderDocId: string) =>
   async (dispatch: AppDispatch) => {
     try {
       dispatch(sendLocationStart());
+
       const response = await appAxios.post(
         `api/v1/updateReachedAction/${orderDocId}`,
         {
@@ -154,14 +179,32 @@ export const sendLocation =
           longitude,
         }
       );
+
       dispatch(sendLocationSuccess(response.data));
+
       Toast.show({
         type: "success",
-        text1: "Location Sent Successfully",
+        text1: "Location Sent",
+        text2: "Location updated successfully ",
       });
 
-      dispatch(triggerOrderRefetch(orderDocId));
+      // ⬇️ Make sure refetch runs AFTER success and is awaited
+      await dispatch(triggerOrderRefetch(orderDocId));
+
+      return response.data;
     } catch (error: any) {
-      dispatch(sendLocationFailure(error.message || "Failed to send location"));
+      dispatch(
+        sendLocationFailure(
+          error?.response?.data?.message || "Failed to send location"
+        )
+      );
+
+      Toast.show({
+        type: "error",
+        text1: "Sending Failed",
+        text2: error?.response?.data?.message || "Something went wrong.",
+      });
+
+      throw error;
     }
   };

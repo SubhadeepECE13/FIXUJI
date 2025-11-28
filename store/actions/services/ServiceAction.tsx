@@ -16,6 +16,7 @@ import {
 } from "@/store/reducers/services/updateServiceSlice";
 import { AppDispatch } from "@/store/Store";
 import Toast from "react-native-toast-message";
+import { triggerOrderRefetch } from "../carImage/refetchActions";
 
 export const fetchServices = () => async (dispatch: AppDispatch) => {
   try {
@@ -60,24 +61,76 @@ export interface UpdateServicePayload {
   total: number;
 }
 
+// export const updateServiceDetails =
+//   (orderDocId: string, payload: UpdateServicePayload) =>
+//   async (dispatch: AppDispatch) => {
+//     try {
+//       dispatch(updateServiceStart());
+
+//       // 🛠 Ensure clean consistent payload
+//       const finalPayload = {
+//         ...payload,
+//         addons: payload.addons.map((id) => String(id).trim()).filter(Boolean),
+//       };
+
+//       const endpoint = `/api/v1/updateService/${orderDocId}`;
+//       console.log("🔧 Updating Service:", endpoint);
+//       console.log("📦 Final Payload Sent:", finalPayload);
+
+//       const response = await appAxios.put(endpoint, finalPayload);
+
+//       dispatch(updateServiceSuccess(response.data));
+
+//       Toast.show({
+//         type: "success",
+//         text1: "Package Updated ",
+//         text2: "Service and add-ons updated successfully.",
+//       });
+
+//       return response.data;
+//     } catch (error: any) {
+//       console.error(" updateServiceDetails Error:", error.response || error);
+
+//       dispatch(
+//         updateServiceFailure(error?.response?.data?.message || "Update failed")
+//       );
+//       dispatch(triggerOrderRefetch(orderDocId));
+
+//       Toast.show({
+//         type: "error",
+//         text1: "Update Failed",
+//         text2: error?.response?.data?.message || "Something went wrong.",
+//       });
+
+//       throw error;
+//     }
+//   };
+
 export const updateServiceDetails =
   (orderDocId: string, payload: UpdateServicePayload) =>
   async (dispatch: AppDispatch) => {
     try {
       dispatch(updateServiceStart());
 
-      const endpoint = `/api/v1/updateService/${orderDocId}`;
-      console.log(" Updating Service:", endpoint);
-      console.log(" Payload:", payload);
+      const finalPayload = {
+        ...payload,
+        addons: payload.addons.map((id) => String(id).trim()).filter(Boolean),
+      };
 
-      const response = await appAxios.put(endpoint, payload);
+      const endpoint = `/api/v1/updateService/${orderDocId}`;
+      console.log("🔧 Updating Service:", endpoint);
+      console.log("📦 Final Payload Sent:", finalPayload);
+
+      const response = await appAxios.put(endpoint, finalPayload);
 
       dispatch(updateServiceSuccess(response.data));
 
+      dispatch(triggerOrderRefetch(orderDocId));
+
       Toast.show({
         type: "success",
-        text1: "Package Updated",
-        text2: "Service and add-ons updated successfully 🎉",
+        text1: "Package Updated ",
+        text2: "Service and add-ons updated successfully.",
       });
 
       return response.data;

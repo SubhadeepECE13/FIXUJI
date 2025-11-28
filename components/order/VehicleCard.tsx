@@ -26,17 +26,13 @@ interface Addons {
   addon_name: string;
   addon_desc?: string;
   addon_img?: string;
-  variant: { actual_price: number }[];
+  actual_price?: number;
 }
 
 interface Props {
   suggestedAddons: Addons[];
   orderId: string;
 }
-
-const getAddonPrice = (addon: any) => {
-  return addon.actual_price || addon.variant?.[0]?.actual_price || 0;
-};
 
 const AddonSuggestionCard: React.FC<Props> = ({ suggestedAddons, orderId }) => {
   const dispatch = useDispatch();
@@ -52,15 +48,15 @@ const AddonSuggestionCard: React.FC<Props> = ({ suggestedAddons, orderId }) => {
       <Text style={styles.heading}>Recommended Add-ons</Text>
 
       <FlatList
-        data={suggestedAddons}
-        keyExtractor={(item) => String(item.id)}
         horizontal
         showsHorizontalScrollIndicator={false}
+        data={suggestedAddons}
+        keyExtractor={(item) => item.id}
         ItemSeparatorComponent={() => (
           <View style={{ width: windowWidth(4) }} />
         )}
         renderItem={({ item }) => {
-          const price = getAddonPrice(item);
+          const price = item.actual_price;
 
           return (
             <View style={styles.card}>
@@ -86,8 +82,7 @@ const AddonSuggestionCard: React.FC<Props> = ({ suggestedAddons, orderId }) => {
                             addon: {
                               id: String(item.id),
                               name: item.addon_name,
-                              price,
-                              realId: item.id,
+                              price: item.actual_price ?? 0,
                             },
                           })
                         )
@@ -126,12 +121,13 @@ const styles = StyleSheet.create({
   },
   card: {
     width: windowWidth(55),
+    // height: windowHeight(25),
     backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    elevation: 3,
+    padding: windowWidth(2.2),
+    borderRadius: windowHeight(2),
+    // shadowColor: "#000",
+    // shadowOpacity: 0.06,
+    // elevation: 3,
   },
   image: {
     width: "100%",
