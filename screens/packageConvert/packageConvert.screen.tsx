@@ -194,6 +194,8 @@ export default function PackageConvert() {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
+          style={{ flex: 1, zIndex: 1 }}
         >
           <PackageConfigSection
             serviceOpen={serviceOpen}
