@@ -156,7 +156,6 @@ export const sendLocation =
         text2: "Location updated successfully ",
       });
 
-      // ⬇️ Make sure refetch runs AFTER success and is awaited
       await dispatch(triggerOrderRefetch(orderDocId));
 
       return response.data;
@@ -196,20 +195,12 @@ export const completeOrder = (orderDocId: string, body: CompleteOrderBody) => {
 
       const endpoint = `/api/v1/completeOrder/${orderDocId}`;
 
-      // 🔍 Print everything before calling API
-      console.log("========== COMPLETE ORDER API CALL ==========");
-      console.log("📌 URL:", appAxios.defaults.baseURL + endpoint);
-      console.log("📦 Payload:", payload);
-      console.log("==============================================");
-
       const response = await appAxios.put(endpoint, payload);
 
       dispatch(completeOrderSuccess());
 
       return response.data;
     } catch (err: any) {
-      console.log("❌ COMPLETE ORDER ERROR:", err?.response?.data);
-
       const msg =
         err?.response?.data?.message || "Failed to complete order. Try again.";
 
@@ -226,29 +217,20 @@ export const startOrder = (orderDocId: string) => {
 
       const endpoint = `/api/v1/startOrder/${orderDocId}`;
 
-      // Debug logs
-      console.log("========== START ORDER API CALL ==========");
-      console.log("📌 URL:", appAxios.defaults.baseURL + endpoint);
-      console.log("==========================================");
-
       const response = await appAxios.post(endpoint);
 
       dispatch(startOrderSuccess());
 
-      // 🔥 Refresh the order after success
       dispatch(triggerOrderRefetch(orderDocId));
 
       return response.data;
     } catch (err: any) {
-      console.log("❌ START ORDER API ERROR:", err?.response?.data);
-
       const msg =
         err?.response?.data?.message ||
         "Failed to start order. Please try again.";
 
       dispatch(startOrderFail(msg));
 
-      // ❗ Optional: only refresh on failure too
       dispatch(triggerOrderRefetch(orderDocId));
 
       throw err;
