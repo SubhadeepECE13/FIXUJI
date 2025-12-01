@@ -1,7 +1,10 @@
-import { fetchOrderDetailsByDocId } from "@/store/actions/orders/OrderAction";
+import {
+  fetchOrderDetailsByDocId,
+  getAllOrders,
+} from "@/store/actions/orders/OrderAction";
 import { updateServiceDetails } from "@/store/actions/services/ServiceAction";
 import { useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -45,9 +48,11 @@ const Loader = () => (
 const OrderDetailsScreen = () => {
   const { order_id } = useLocalSearchParams();
   const dispatch = useDispatch<AppDispatch>();
-  const [saving, setSaving] = useState(false);
 
-  const { orderDetails, loading, error } = useSelector(
+  const [saving, setSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+
+  const { orderDetails, loading } = useSelector(
     (state: RootState) => state.orderDetails
   );
 
@@ -57,11 +62,31 @@ const OrderDetailsScreen = () => {
         state.orderPayment.selectedAddons[order_id as string]
     ) || [];
 
+  const originalAddons = useRef<string[]>([]);
+
+  /** Load Order */
   useEffect(() => {
-    if (order_id) {
-      dispatch(fetchOrderDetailsByDocId(order_id as string));
-    }
+    if (order_id) dispatch(fetchOrderDetailsByDocId(order_id as string));
   }, [order_id]);
+
+  /** Store original values ONCE when orderDetails arrives */
+  useEffect(() => {
+    if (!orderDetails?.data) return;
+
+    const defaultAddonIds =
+      orderDetails.data.addons?.map((a) => a.id.toString()) || [] || "";
+    originalAddons.current = defaultAddonIds;
+  }, [orderDetails]);
+
+  /** Detect if user changed addons */
+  useEffect(() => {
+    const currentIds = selectedAddons.map((a) => a.id.toString()).sort();
+    const original = [...originalAddons.current].sort();
+
+    const changed = JSON.stringify(currentIds) !== JSON.stringify(original);
+
+    setIsDirty(changed);
+  }, [selectedAddons]);
 
   if (!orderDetails) return <View style={styles.centered}></View>;
 
@@ -69,6 +94,7 @@ const OrderDetailsScreen = () => {
 
   const basePrice = Number(data?.variant?.actual_price || 0);
   const addonTotal = selectedAddons.reduce((sum, a) => sum + a.price, 0);
+
   const chargeTotal = Array.isArray(data?.charges)
     ? data.charges.reduce((sum, c) => sum + Number(c.charge_amount || 0), 0)
     : 0;
@@ -79,6 +105,8 @@ const OrderDetailsScreen = () => {
   const grandTotal = finalPrice + chargeTotal - discount;
 
   const handleSave = async () => {
+    if (!isDirty) return;
+
     setSaving(true);
 
     const payload = {
@@ -89,19 +117,21 @@ const OrderDetailsScreen = () => {
     };
 
     try {
-      await dispatch(
-        updateServiceDetails(order_id as string, {
-          ...payload,
-          // Ensure service is always a string (never null)
-          service: payload.service ?? "",
-        })
-      );
+      // Ensure service is a string (not null)
+      const fixedPayload = {
+        ...payload,
+        service: payload.service ?? "",
+      };
+      await dispatch(updateServiceDetails(order_id as string, fixedPayload));
 
       Toast.show({
         type: "success",
         text1: "Updated Successfully",
-        text2: "Order details updated.",
       });
+
+      // Reset dirty flag (now this is the new original)
+      originalAddons.current = [...payload.addons];
+      setIsDirty(false);
 
       dispatch(fetchOrderDetailsByDocId(order_id as string));
     } catch {
@@ -118,7 +148,6 @@ const OrderDetailsScreen = () => {
     <View style={[{ flex: 1 }, commonStyles.grayContainer]}>
       <Header title="Order Details" isBack />
 
-      {/* Scrollable Content */}
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: windowHeight(6) }}
@@ -143,9 +172,9 @@ const OrderDetailsScreen = () => {
         <Button
           title={saving ? "UPDATING..." : "Save"}
           height={windowHeight(6)}
-          backgroundColor={color.primary}
+          backgroundColor={isDirty ? color.primary : "#BDBDBD"}
           onPress={handleSave}
-          disabled={saving}
+          disabled={!isDirty || saving}
           isLoading={saving}
         />
       </View>

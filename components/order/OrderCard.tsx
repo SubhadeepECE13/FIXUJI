@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import ContactActionsWrapper from "@/store/actions/orders/ContactActionWrapper";
+import { SettingsResponse } from "@/store/actions/settings/settings.types";
+import { IUser } from "@/store/actions/users/users.types";
 import { commonStyles } from "@/styles/common.style";
 import color from "@/themes/Colors.themes";
 import {
@@ -8,13 +9,11 @@ import {
   windowWidth,
 } from "@/themes/Constants.themes";
 import fonts from "@/themes/Fonts.themes";
+import { router } from "expo-router";
+import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import CustomImage from "../common/CustomImage";
 import Chip from "./OrderChip";
-import { IUser } from "@/store/actions/users/users.types";
-import ContactActionsWrapper from "@/store/actions/orders/ContactActionWrapper";
-import Loader from "../common/Loader";
-import { SettingsResponse } from "@/store/actions/settings/settings.types";
-import { router } from "expo-router";
 
 const Card = ({
   vendor,
@@ -59,9 +58,14 @@ const Card = ({
                     backgroundColor={userData.service_color}
                   />
                   <Chip
-                    label={String(userData.variant)}
-                    backgroundColor={userData.service_color}
+                    label={
+                      Order?.variant?.vehicle_type ||
+                      userData?.variant?.vehicle_type ||
+                      "Variant Not Found"
+                    }
+                    backgroundColor={userData?.service_color}
                   />
+
                   <Text style={styles.status}>{Order.customer_zone}</Text>
                 </View>
               </View>
@@ -76,13 +80,13 @@ const Card = ({
               <Text style={styles.technicianName}>
                 {vendor.vendor.vendor_name}
               </Text>
-              {/* <Text style={styles.priceText}>
+              <Text style={styles.priceText}>
                 {new Intl.NumberFormat("en-IN", {
                   style: "currency",
                   currency: "INR",
                   minimumFractionDigits: 0,
-                }).format(Number(vendor?.variant?.actual_price || 0))}
-              </Text> */}
+                }).format(Number(Order.variant.actual_price || 0))}
+              </Text>
             </View>
           </View>
 

@@ -48,6 +48,8 @@ export const fetchAddonsByService =
         )}&variant=${encodeURIComponent(variant)}`
       );
 
+      console.log(service, variant);
+
       dispatch(fetchAddonsSuccess(res.data?.addons || []));
     } catch (error: any) {
       dispatch(fetchAddonsFailure(error.message || "Failed to fetch addons"));
@@ -60,51 +62,6 @@ export interface UpdateServicePayload {
   service: string;
   total: number;
 }
-
-// export const updateServiceDetails =
-//   (orderDocId: string, payload: UpdateServicePayload) =>
-//   async (dispatch: AppDispatch) => {
-//     try {
-//       dispatch(updateServiceStart());
-
-//       // 🛠 Ensure clean consistent payload
-//       const finalPayload = {
-//         ...payload,
-//         addons: payload.addons.map((id) => String(id).trim()).filter(Boolean),
-//       };
-
-//       const endpoint = `/api/v1/updateService/${orderDocId}`;
-//       console.log("🔧 Updating Service:", endpoint);
-//       console.log("📦 Final Payload Sent:", finalPayload);
-
-//       const response = await appAxios.put(endpoint, finalPayload);
-
-//       dispatch(updateServiceSuccess(response.data));
-
-//       Toast.show({
-//         type: "success",
-//         text1: "Package Updated ",
-//         text2: "Service and add-ons updated successfully.",
-//       });
-
-//       return response.data;
-//     } catch (error: any) {
-//       console.error(" updateServiceDetails Error:", error.response || error);
-
-//       dispatch(
-//         updateServiceFailure(error?.response?.data?.message || "Update failed")
-//       );
-//       dispatch(triggerOrderRefetch(orderDocId));
-
-//       Toast.show({
-//         type: "error",
-//         text1: "Update Failed",
-//         text2: error?.response?.data?.message || "Something went wrong.",
-//       });
-
-//       throw error;
-//     }
-//   };
 
 export const updateServiceDetails =
   (orderDocId: string, payload: UpdateServicePayload) =>

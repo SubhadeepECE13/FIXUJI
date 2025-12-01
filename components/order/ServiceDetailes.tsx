@@ -38,10 +38,8 @@ const ServiceDetails: React.FC<Props> = ({ data }) => {
 
   const params = useLocalSearchParams<{ order_id: string }>();
 
-  /** Unified orderId from API or URL */
-  const orderId = params.order_id || data?.orderDocId;
+  const orderId = params.order_id;
 
-  /** Get selected addons for this order */
   const selectedAddons =
     useSelector(
       (state: RootState) => state.orderPayment.selectedAddons[orderId]
@@ -62,7 +60,6 @@ const ServiceDetails: React.FC<Props> = ({ data }) => {
   const finalPrice = basePrice + addonTotal;
   const grandTotal = finalPrice + chargeTotal - discount;
 
-  /** Load existing addons from API */
   useEffect(() => {
     if (!data?.addons) return;
 
@@ -75,7 +72,6 @@ const ServiceDetails: React.FC<Props> = ({ data }) => {
     dispatch(loadInitialAddons({ orderId, addons: formatted }));
   }, [orderId, data?.addons]);
 
-  /** Update payable amount any time selection changes */
   useEffect(() => {
     dispatch(setFinalPayable({ orderId, amount: finalPrice }));
   }, [finalPrice]);
@@ -98,14 +94,24 @@ const ServiceDetails: React.FC<Props> = ({ data }) => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.card}>
-            <Text style={styles.title}>Package Summary</Text>
-            {/* <Button
-              title="Convert"
-              height={windowHeight(3)}
-              width={windowWidth(15)}
-              titleStyle={{ fontSize: fontSizes.xs }}
-              onPress={() => router.push(`/packageConvert/${orderId}`)}
-            /> */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Text style={styles.title}>Package Summary</Text>
+              <View style={{ marginBottom: windowHeight(1.5) }}>
+                <Button
+                  title="Convert"
+                  height={windowHeight(3)}
+                  width={windowWidth(16)}
+                  titleStyle={{ fontSize: fontSizes.xs }}
+                  onPress={() => router.replace(`/packageConvert/${orderId}`)}
+                />
+              </View>
+            </View>
             <View style={styles.row}>
               <Text style={styles.label}>{data?.service?.name}</Text>
               <Text style={styles.priceText}>₹{basePrice}</Text>

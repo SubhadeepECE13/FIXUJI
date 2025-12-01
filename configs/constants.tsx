@@ -20,13 +20,13 @@ export const ORDERS_SCREEN_TABS: TabItem[] = [
     operand: "EQ",
     filterText: "",
   },
-  // {
-  //   iconType: "Fontisto",
-  //   iconName: "atom",
-  //   label: "COMPLETED",
-  //   status: "COMPLETED",
-  //   operand: "EQ",
-  //   filterText: "",
-  // },
+  {
+    iconType: "Fontisto",
+    iconName: "atom",
+    label: "COMPLETED",
+    status: "COMPLETED",
+    operand: "EQ  ",
+    filterText: "",
+  },
 ];
 export const IVR_NUMBER = "8697771777";

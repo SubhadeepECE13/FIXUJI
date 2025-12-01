@@ -1,8 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { AppDispatch } from "@/store/Store";
-import { appAxios } from "@/store/apiconfig";
 
-import Toast from "react-native-toast-message";
 import { ServiceType } from "@/store/actions/services/services.action";
 
 interface ServiceState {

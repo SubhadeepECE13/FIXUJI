@@ -5,6 +5,7 @@ import PackageConfigSection from "@/components/packageConvert/PackageConfigurati
 import {
   fetchAddonsByService,
   fetchServices,
+  updateServiceDetails,
 } from "@/store/actions/services/ServiceAction";
 import { AppDispatch, RootState } from "@/store/Store";
 import color from "@/themes/Colors.themes";
@@ -14,7 +15,8 @@ import {
   windowWidth,
 } from "@/themes/Constants.themes";
 import fonts from "@/themes/Fonts.themes";
-import React, { useEffect, useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -23,37 +25,98 @@ import {
   Text,
   View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { useDispatch, useSelector } from "react-redux";
 
 export default function PackageConvert() {
   const dispatch = useDispatch<AppDispatch>();
-  // const finalPayable = useSelector(
-  //   (state: RootState) => state.orderPayment.finalPayable
-  // );
   const { data: serviceList } = useSelector(
     (state: RootState) => state.services
   );
   const { data: addonList, loading: addonLoading } = useSelector(
     (state: RootState) => state.addons
   );
+  const { orderDetails } = useSelector(
+    (state: RootState) => state.orderDetails
+  );
+
+  const data = orderDetails?.data;
+  const { order_id } = useLocalSearchParams();
 
   const [service, setService] = useState<string | null>(null);
   const [variant, setVariant] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [saving, setSaving] = useState(false);
   const [serviceOpen, setServiceOpen] = useState(false);
   const [variantOpen, setVariantOpen] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
+  const originalService = useRef<string | null>(null);
+  const originalVariant = useRef<string | null>(null);
+  const originalAddons = useRef<string[]>([]);
+  const hasInitialized = useRef(false);
+
+  /** ---- Fetch services ---- */
   useEffect(() => {
     dispatch(fetchServices());
   }, []);
 
+  /** ---- Load defaults only ONCE ---- */
+  useEffect(() => {
+    if (!data) return;
+
+    const defaultService = data?.service?.name ?? null;
+    const defaultVariant = data?.variant?.vehicle_type ?? null;
+    const defaultAddons = data?.addons?.map((a) => a.id.toString()) || [];
+
+    setService(defaultService);
+    setVariant(defaultVariant);
+    setSelectedIds(defaultAddons);
+
+    originalService.current = defaultService;
+    originalVariant.current = defaultVariant;
+    originalAddons.current = defaultAddons;
+  }, [data]);
+
+  /** ---- Fetch addons when dropdown values change ---- */
   useEffect(() => {
     if (service && variant) {
       dispatch(fetchAddonsByService(service, variant));
     }
   }, [service, variant]);
+
+  /** ---- Reset addons IF user changes service/variant AFTER initial load ---- */
+  useEffect(() => {
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      return;
+    }
+
+    if (
+      service !== originalService.current ||
+      variant !== originalVariant.current
+    ) {
+      setSelectedIds([]); // Clear previous addons
+    }
+  }, [service, variant]);
+
+  /** ---- Track if user modified anything ---- */
+  useEffect(() => {
+    const serviceChanged = service !== originalService.current;
+    const variantChanged = variant !== originalVariant.current;
+    const addonsChanged =
+      JSON.stringify(selectedIds.sort()) !==
+      JSON.stringify(originalAddons.current.sort());
+
+    setIsDirty(serviceChanged || variantChanged || addonsChanged);
+  }, [service, variant, selectedIds]);
+
+  /** ---- Addon selection toggle ---- */
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
 
   const variants = [
     { label: "Hatchback", value: "Hatchback" },
@@ -63,27 +126,61 @@ export default function PackageConvert() {
     { label: "7 Seater", value: "7 Seater" },
   ];
 
-  const toggleSelection = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+  const getBaseServicePrice = () => {
+    const selectedService = serviceList?.find((s) => s.name === service);
+    const varInfo = selectedService?.variant?.find(
+      (v) => v.vehicle_type === variant
     );
+    return varInfo?.actual_price || 0;
   };
 
-  const total = addonList.reduce(
-    (sum, item) =>
-      sum +
-      (selectedIds.includes(item.id)
-        ? item.variant?.[0]?.actual_price || 0
-        : 0),
-    0
-  );
+  /** ---- Compute final total ---- */
+  const total = useMemo(() => {
+    const base = getBaseServicePrice();
+    const addonCost = addonList
+      .filter((a) => selectedIds.includes(a.id))
+      .reduce((sum, a) => sum + (a?.actual_price || 0), 0);
 
-  // const grandtotal = total + Number(finalPayable);
-  console.log("grandtotal", total);
+    return base + addonCost;
+  }, [service, variant, addonList, selectedIds]);
 
-  const handleSave = () => {
-    setIsSubmitting(true);
-    setTimeout(() => setIsSubmitting(false), 700);
+  /** ---- Save update ---- */
+  const handleSave = async () => {
+    if (!isDirty) return;
+
+    setSaving(true);
+
+    const payload = {
+      addons: selectedIds,
+      service: service ?? data?.service?.name ?? "",
+      variant: variant ?? data?.variant?.vehicle_type ?? "",
+      total,
+    };
+
+    try {
+      await dispatch(updateServiceDetails(order_id as string, payload));
+
+      originalService.current = service;
+      originalVariant.current = variant;
+      originalAddons.current = [...selectedIds];
+      setIsDirty(false);
+
+      Toast.show({
+        type: "success",
+        text1: "Updated Successfully",
+        text2: "Order details updated.",
+      });
+
+      setTimeout(() => router.replace(`/orderDetailes/${order_id}`), 800);
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Update Failed",
+        text2: "Please try again",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -103,10 +200,9 @@ export default function PackageConvert() {
             variantOpen={variantOpen}
             service={service}
             variant={variant}
-            services={serviceList.map((s) => ({
-              label: s.name,
-              value: s.name,
-            }))}
+            services={
+              serviceList?.map((s) => ({ label: s.name, value: s.name })) || []
+            }
             variants={variants}
             setServiceOpen={setServiceOpen}
             setVariantOpen={setVariantOpen}
@@ -117,11 +213,7 @@ export default function PackageConvert() {
           />
 
           <AddonSection
-            addons={addonList.map((a) => ({
-              id: a.id,
-              addon_name: a.addon_name,
-              actual_price: a.variant?.[0]?.actual_price || 0,
-            }))}
+            addons={addonList}
             isLoading={addonLoading}
             selectedIds={selectedIds}
             toggleSelection={toggleSelection}
@@ -139,10 +231,10 @@ export default function PackageConvert() {
           <Button
             height={windowHeight(6)}
             title="SAVE PACKAGE"
-            backgroundColor={color.primary}
+            backgroundColor={isDirty ? color.primary : "#BDBDBD"}
             onPress={handleSave}
-            disabled={isSubmitting}
-            isLoading={isSubmitting}
+            disabled={!isDirty || saving}
+            isLoading={saving}
             titleStyle={styles.buttonText}
           />
         </View>
@@ -150,7 +242,6 @@ export default function PackageConvert() {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,

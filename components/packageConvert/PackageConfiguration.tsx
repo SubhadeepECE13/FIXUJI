@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TextInput, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import DropDownPicker, { ItemType } from "react-native-dropdown-picker";
 import color from "@/themes/Colors.themes";
 import {
@@ -8,13 +8,14 @@ import {
   fontSizes,
 } from "@/themes/Constants.themes";
 import fonts from "@/themes/Fonts.themes";
+import { RootState } from "@/store/Store";
+import { useSelector } from "react-redux";
 
 interface Props {
   serviceOpen: boolean;
   variantOpen: boolean;
   service: string | null;
   variant: string | null;
-  // discount: string;
   services: ItemType<string>[];
   variants: ItemType<string>[];
   setServiceOpen: (open: boolean) => void;
@@ -23,7 +24,6 @@ interface Props {
   onVariantOpen: () => void;
   setService: (value: string | null) => void;
   setVariant: (value: string | null) => void;
-  // setDiscount: (value: string) => void;
 }
 
 export default function PackageConfiguration({
@@ -31,7 +31,6 @@ export default function PackageConfiguration({
   variantOpen,
   service,
   variant,
-  // discount,
   services,
   variants,
   setServiceOpen,
@@ -40,8 +39,11 @@ export default function PackageConfiguration({
   onVariantOpen,
   setService,
   setVariant,
-  // setDiscount,
 }: Props) {
+  const { orderDetails } = useSelector(
+    (state: RootState) => state.orderDetails
+  );
+
   return (
     <View style={styles.card}>
       <Text style={styles.sectionHeader}>Configuration</Text>
@@ -50,7 +52,7 @@ export default function PackageConfiguration({
         <Text style={styles.label}>Selected Service</Text>
         <DropDownPicker
           open={serviceOpen}
-          value={service}
+          value={service ?? orderDetails?.data?.service?.name ?? null}
           items={services}
           setOpen={(cb) =>
             setServiceOpen(typeof cb === "function" ? cb(serviceOpen) : cb)
@@ -58,13 +60,10 @@ export default function PackageConfiguration({
           setValue={(cb) =>
             setService(typeof cb === "function" ? cb(service) : cb)
           }
-          onOpen={onServiceOpen}
           placeholder="Select Service Type"
-          placeholderStyle={styles.placeholderText}
           style={styles.dropdown}
           dropDownContainerStyle={styles.dropdownBox}
           textStyle={styles.dropdownText}
-          listMode="SCROLLVIEW"
         />
       </View>
 
@@ -72,7 +71,7 @@ export default function PackageConfiguration({
         <Text style={styles.label}>Vehicle Variant</Text>
         <DropDownPicker
           open={variantOpen}
-          value={variant}
+          value={variant ?? orderDetails?.data?.variant?.vehicle_type ?? null}
           items={variants}
           setOpen={(cb) =>
             setVariantOpen(typeof cb === "function" ? cb(variantOpen) : cb)
@@ -80,31 +79,15 @@ export default function PackageConfiguration({
           setValue={(cb) =>
             setVariant(typeof cb === "function" ? cb(variant) : cb)
           }
-          onOpen={onVariantOpen}
           placeholder="Select Vehicle Variant"
-          placeholderStyle={styles.placeholderText}
           style={styles.dropdown}
           dropDownContainerStyle={styles.dropdownBox}
           textStyle={styles.dropdownText}
-          listMode="SCROLLVIEW"
         />
       </View>
-
-      {/* <View style={[styles.inputGroup, { zIndex: 1000 }]}>
-        <Text style={styles.label}>Apply Discount (₹)</Text>
-        <TextInput
-          value={discount}
-          onChangeText={setDiscount}
-          placeholder="0"
-          keyboardType="numeric"
-          style={styles.input}
-          placeholderTextColor="#999"
-        />
-      </View> */}
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   card: {
     backgroundColor: color.whiteColor,

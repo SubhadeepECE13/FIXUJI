@@ -18,6 +18,16 @@ import {
 import Toast from "react-native-toast-message";
 import { router } from "expo-router";
 import { triggerOrderRefetch } from "../carImage/refetchActions";
+import {
+  completeOrderFail,
+  completeOrderStart,
+  completeOrderSuccess,
+} from "@/store/reducers/orders/completeOrderSlice";
+import {
+  startOrderFail,
+  startOrderStart,
+  startOrderSuccess,
+} from "@/store/reducers/orders/startOrderSlice";
 export interface CallLockRequest {
   callTo: string;
   callFrom: string;
@@ -105,24 +115,6 @@ export const lockCall =
     }
   };
 
-// export const fetchOrderDetailsByDocId =
-//   (order_id: string) => async (dispatch: AppDispatch) => {
-//     try {
-//       dispatch(fetchOrderDetailsStart());
-//       const response = await appAxios.get<ServiceBooking>(
-//         `api/v1/getBookingByOrder/${order_id}`
-//       );
-
-//       console.log("get order by id redponse .......", order_id);
-
-//       dispatch(fetchOrderDetailsSuccess(response.data));
-//     } catch (error: any) {
-//       dispatch(
-//         fetchOrderDetailsFailure(error.message || "Something went wrong")
-//       );
-//     }
-//   };
-
 export const fetchOrderDetailsByDocId =
   (order_id: string) => async (dispatch: AppDispatch) => {
     try {
@@ -141,30 +133,6 @@ export const fetchOrderDetailsByDocId =
       );
     }
   };
-
-// export const sendLocation =
-//   (latitude: number, longitude: number, orderDocId: string) =>
-//   async (dispatch: AppDispatch) => {
-//     try {
-//       dispatch(sendLocationStart());
-//       const response = await appAxios.post(
-//         `api/v1/updateReachedAction/${orderDocId}`,
-//         {
-//           latitude,
-//           longitude,
-//         }
-//       );
-//       dispatch(sendLocationSuccess(response.data));
-//       Toast.show({
-//         type: "success",
-//         text1: "Location Sent Successfully",
-//       });
-
-//       dispatch(triggerOrderRefetch(orderDocId));
-//     } catch (error: any) {
-//       dispatch(sendLocationFailure(error.message || "Failed to send location"));
-//     }
-//   };
 
 export const sendLocation =
   (latitude: number, longitude: number, orderDocId: string) =>
@@ -208,3 +176,82 @@ export const sendLocation =
       throw error;
     }
   };
+
+interface CompleteOrderBody {
+  recievePayment: number;
+  paymentMethod: "CASH" | "UPI";
+  delay?: number;
+}
+
+export const completeOrder = (orderDocId: string, body: CompleteOrderBody) => {
+  return async (dispatch: any) => {
+    try {
+      dispatch(completeOrderStart());
+
+      const payload = {
+        recievePayment: body.recievePayment,
+        paymentMethod: body.paymentMethod,
+        delay: body.delay ?? 0,
+      };
+
+      const endpoint = `/api/v1/completeOrder/${orderDocId}`;
+
+      // 🔍 Print everything before calling API
+      console.log("========== COMPLETE ORDER API CALL ==========");
+      console.log("📌 URL:", appAxios.defaults.baseURL + endpoint);
+      console.log("📦 Payload:", payload);
+      console.log("==============================================");
+
+      const response = await appAxios.put(endpoint, payload);
+
+      dispatch(completeOrderSuccess());
+
+      return response.data;
+    } catch (err: any) {
+      console.log("❌ COMPLETE ORDER ERROR:", err?.response?.data);
+
+      const msg =
+        err?.response?.data?.message || "Failed to complete order. Try again.";
+
+      dispatch(completeOrderFail(msg));
+      throw err;
+    }
+  };
+};
+
+export const startOrder = (orderDocId: string) => {
+  return async (dispatch: any) => {
+    try {
+      dispatch(startOrderStart());
+
+      const endpoint = `/api/v1/startOrder/${orderDocId}`;
+
+      // Debug logs
+      console.log("========== START ORDER API CALL ==========");
+      console.log("📌 URL:", appAxios.defaults.baseURL + endpoint);
+      console.log("==========================================");
+
+      const response = await appAxios.post(endpoint);
+
+      dispatch(startOrderSuccess());
+
+      // 🔥 Refresh the order after success
+      dispatch(triggerOrderRefetch(orderDocId));
+
+      return response.data;
+    } catch (err: any) {
+      console.log("❌ START ORDER API ERROR:", err?.response?.data);
+
+      const msg =
+        err?.response?.data?.message ||
+        "Failed to start order. Please try again.";
+
+      dispatch(startOrderFail(msg));
+
+      // ❗ Optional: only refresh on failure too
+      dispatch(triggerOrderRefetch(orderDocId));
+
+      throw err;
+    }
+  };
+};

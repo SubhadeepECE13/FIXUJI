@@ -1,19 +1,9 @@
 import { useAppDispatch, useAppSelector } from "@/store/Reduxhook";
 import { yupResolver } from "@hookform/resolvers/yup";
 import React, { useRef, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Image,
-  Alert,
-  Platform,
-  ActionSheetIOS,
-} from "react-native";
+import { useForm } from "react-hook-form";
+import { StyleSheet, Text, View } from "react-native";
 import * as Yup from "yup";
-import * as ImagePicker from "expo-image-picker";
 
 import Button from "@/components/common/Button";
 import CustomModal from "@/components/common/CustomModal";
@@ -27,10 +17,7 @@ import {
 } from "@/themes/Constants.themes";
 import fonts from "@/themes/Fonts.themes";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import Animated, { ZoomIn } from "react-native-reanimated";
 import BrandSelectSheet from "./BrandSelectionModal";
-import { useLocalSearchParams } from "expo-router";
-import { ServiceBooking } from "@/store/actions/orders/orderDetailesAction";
 
 type UpdateCarDetailsModalProps = {
   isOpen: boolean;

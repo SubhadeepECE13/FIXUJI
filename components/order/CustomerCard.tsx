@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from "@/store/Reduxhook";
-import { sendLocation } from "@/store/actions/orders/OrderAction";
+import { sendLocation, startOrder } from "@/store/actions/orders/OrderAction";
 import { ServiceBooking } from "@/store/actions/orders/orderDetailesAction";
 import color from "@/themes/Colors.themes";
 import {
@@ -9,13 +9,14 @@ import {
 } from "@/themes/Constants.themes";
 import fonts from "@/themes/Fonts.themes";
 import * as ExpoLocation from "expo-location";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Toast from "react-native-toast-message";
 import Button from "../common/Button";
 import AddressModal from "./AddressModal";
 import UpdateCarDetailsModal from "./UpdateCarDetailesModal";
+import OrderActionButton from "./orderActionButton";
 interface Props {
   data: ServiceBooking["data"];
 }
@@ -26,12 +27,10 @@ const CustomerCard: React.FC<Props> = ({ data }) => {
   const [isSending, setIsSending] = useState(false);
 
   const dispatch = useAppDispatch();
-  const { loading } = useAppSelector((state) => state.location);
+
   const user = useAppSelector((state) => state.user);
   const isSameVendor = user?.user?.id === data.vendorId;
-  console.log("VENDOR ID ...........>>>>>>>>>", data.vendorId);
 
-  const canShowReachedButton = isSameVendor && data.status === "ON_THE_WAY";
   const customer = data.userData;
   const service = data.service;
   const customerAddress = data.location;
@@ -97,43 +96,9 @@ const CustomerCard: React.FC<Props> = ({ data }) => {
 
   const orderSequenceId = data.order_id;
 
-  // const handleSendLocation = async (): Promise<void> => {
-  //   try {
-  //     let { status } = await ExpoLocation.requestForegroundPermissionsAsync();
-  //     if (status !== "granted") {
-  //       Toast.show({
-  //         type: "error",
-  //         text1: "Permission Denied",
-  //         text2: "Please enable location access in your app settings.",
-  //       });
-  //       return;
-  //     }
-
-  //     const location = await ExpoLocation.getCurrentPositionAsync({
-  //       accuracy: ExpoLocation.Accuracy.High,
-  //     });
-  //     console.log("Got location:", location.coords);
-
-  //     dispatch(
-  //       sendLocation(
-  //         location.coords.latitude,
-  //         location.coords.longitude,
-  //         orderDocId
-  //       )
-  //     );
-  //   } catch (err: any) {
-  //     console.error("Error in handleSendLocation:", err);
-  //     Toast.show({
-  //       type: "error",
-  //       text1: "Location Error",
-  //       text2: err.message || "Could not get your location.",
-  //     });
-  //   }
-  // };
-
   const handleSendLocation = async () => {
     try {
-      setIsSending(true); // 🔥 start loading
+      setIsSending(true);
 
       let { status } = await ExpoLocation.requestForegroundPermissionsAsync();
       if (status !== "granted") {
@@ -156,7 +121,7 @@ const CustomerCard: React.FC<Props> = ({ data }) => {
           location.coords.longitude,
           orderDocId
         )
-      ); // 🔥 wait for refetch and success
+      );
     } catch (err: any) {
       Toast.show({
         type: "error",
@@ -164,7 +129,25 @@ const CustomerCard: React.FC<Props> = ({ data }) => {
         text2: err.message || "Something went wrong",
       });
     } finally {
-      setIsSending(false); // 🔥 stop loading
+      setIsSending(false);
+    }
+  };
+
+  const handleStartOrder = async () => {
+    try {
+      const res = await dispatch(startOrder(orderDocId));
+
+      Toast.show({
+        type: "success",
+        text1: "Booking Started",
+        text2: "Order moved to IN_PROGRESS.",
+      });
+    } catch (err: any) {
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: err?.message || "Something went wrong.",
+      });
     }
   };
 
@@ -196,28 +179,23 @@ const CustomerCard: React.FC<Props> = ({ data }) => {
         })}
       </View>
 
-      {canShowReachedButton && (
-        <Button
-          title="Reached"
-          onPress={() => setCarModalOpen(true)}
-          color={color.primary}
-          height={windowHeight(5)}
-          width={windowWidth(85)}
-          style={styles.reachedBtn}
-          iconType="MaterialCommunityIcons"
-          iconName="map-marker-check"
-          iconSize={22}
-          isIcon
-          isLoading={isSending}
-          disabled={isSending}
+      <View style={{ marginTop: windowHeight(2), alignItems: "center" }}>
+        <OrderActionButton
+          status={data.status}
+          isSameVendor={isSameVendor}
+          isSending={isSending}
+          orderDocId={orderDocId}
+          openCarModal={() => setCarModalOpen(true)}
+          onStartBooking={handleStartOrder}
         />
-      )}
+      </View>
 
       <AddressModal
         isOpen={isAddressModalOpen}
         setOpened={setAddressModalOpen}
         address={customerAddress?.full_address || "N/A"}
       />
+
       <UpdateCarDetailsModal
         isOpen={isCarModalOpen}
         setOpened={setCarModalOpen}
