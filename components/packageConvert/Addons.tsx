@@ -251,7 +251,7 @@ export default function AddonSection({
                     </Text>
 
                     <Text style={styles.commissionText}>
-                      ₹{item.commission}
+                      Commission: ₹{item.commission}
                     </Text>
                   </View>
                 </View>

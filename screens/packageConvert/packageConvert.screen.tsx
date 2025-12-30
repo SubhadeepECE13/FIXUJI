@@ -140,8 +140,8 @@ export default function PackageConvert() {
     const addonCost = addonList
       .filter((a) => selectedIds.includes(a.id))
       .reduce((sum, a) => sum + (a?.actual_price || 0), 0);
-
-    return base + addonCost;
+    const discount = data?.discount ?? 0;
+    return base + addonCost - discount;
   }, [service, variant, addonList, selectedIds]);
 
   /** ---- Save update ---- */

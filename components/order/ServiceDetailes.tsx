@@ -105,16 +105,16 @@ const ServiceDetails: React.FC<Props> = ({ data }) => {
               <View style={{ marginBottom: windowHeight(1.5) }}>
                 <Button
                   title="Convert"
-                  height={windowHeight(3)}
-                  width={windowWidth(16)}
-                  titleStyle={{ fontSize: fontSizes.xs }}
+                  height={windowHeight(4)}
+                  width={windowWidth(24)}
+                  titleStyle={{ fontSize: fontSizes.rg }}
                   onPress={() => router.replace(`/packageConvert/${orderId}`)}
                 />
               </View>
             </View>
             <View style={styles.row}>
               <Text style={styles.label}>{data?.service?.name}</Text>
-              <Text style={styles.priceText}>₹{basePrice}</Text>
+              <Text style={styles.servicepriceText}>₹{basePrice}</Text>
             </View>
 
             {selectedAddons.length > 0 && (
@@ -154,10 +154,15 @@ const ServiceDetails: React.FC<Props> = ({ data }) => {
               <Text style={styles.discountText}>₹{discount}</Text>
             </View>
 
-            <AddonSuggestionCard
+            <View style={styles.row}>
+              <Text style={styles.totalLabel}>Total</Text>
+              <Text style={styles.totalText}>₹{grandTotal}</Text>
+            </View>
+
+            {/* <AddonSuggestionCard
               orderId={orderId}
               suggestedAddons={data?.suggestedAddons || []}
-            />
+            /> */}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -220,13 +225,23 @@ const styles = StyleSheet.create({
 
   priceText: {
     fontFamily: fonts.bold,
-    fontSize: fontSizes.sm,
+    fontSize: fontSizes.rg,
+    color: color.primary,
+  },
+  servicepriceText: {
+    fontFamily: fonts.bold,
+    fontSize: fontSizes.md,
     color: color.primary,
   },
   discountText: {
     fontFamily: fonts.bold,
-    fontSize: fontSizes.sm,
+    fontSize: fontSizes.rg,
     color: color.red,
+  },
+  totalText: {
+    fontFamily: fonts.bold,
+    fontSize: fontSizes.md,
+    color: color.primary,
   },
 
   iconBox: {
@@ -238,5 +253,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  label: { fontFamily: fonts.medium, fontSize: fontSizes.sm },
+  label: { fontFamily: fonts.medium, fontSize: fontSizes.md },
+  totalLabel: {
+    fontFamily: fonts.medium,
+    fontSize: fontSizes.md,
+  },
 });

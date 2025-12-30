@@ -21,12 +21,14 @@ const Card = ({
   user,
   Order,
   settings,
+  refreshFilters,
 }: {
   vendor: Order;
   userData: Order;
   user: IUser;
   Order: Order;
   settings: SettingsResponse;
+  refreshFilters: any;
 }) => {
   console.log("main user id ", user.id);
   const bookingDate = new Date(userData.date.full_date);
@@ -100,6 +102,7 @@ const Card = ({
               order={userData}
               user={user}
               settings={settings}
+              refreshFilters={refreshFilters}
             />
 
             <View style={styles.datetime}>

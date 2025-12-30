@@ -12,6 +12,7 @@ export const getSettings = () => async (dispatch: AppDispatch) => {
       "/api/v1/settings"
     );
     dispatch(setSettings(res.data.data));
+    console.log("get settings response ", getSettings);
   } catch (error) {
     dispatch(setSettingsError("Failed to fetch settings"));
   }

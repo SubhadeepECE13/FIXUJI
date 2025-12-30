@@ -13,6 +13,7 @@ type Props = {
   order: Order;
   user: IUser;
   settings: SettingsResponse;
+  refreshFilters: any;
 };
 
 const ContactActionsWrapper: React.FC<Props> = ({
@@ -23,6 +24,7 @@ const ContactActionsWrapper: React.FC<Props> = ({
   containerStyle,
   iconStyle,
   settings,
+  refreshFilters,
 }) => {
   const isManager = user.role === "Manager";
   const isSameVendor = user.id === order.vendorId;
@@ -63,6 +65,7 @@ const ContactActionsWrapper: React.FC<Props> = ({
       iconStyle={iconStyle}
       navigateAddressLink={order.userData.navigateAddressLink}
       settings={settings}
+      refreshFilters={refreshFilters}
     />
   );
 };

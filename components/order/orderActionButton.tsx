@@ -44,12 +44,12 @@ const OrderActionButton: React.FC<Props> = ({
     case "REACHED":
       return (
         <Button
-          title="Start Booking"
+          title="Start Order"
           color={color.primary}
           height={windowHeight(5)}
           width={windowWidth(85)}
-          iconType="MaterialIcons"
-          iconName="start"
+          iconType="MaterialCommunityIcons"
+          iconName="timer-sand-complete"
           iconSize={22}
           isIcon
           onPress={onStartBooking}
@@ -59,12 +59,12 @@ const OrderActionButton: React.FC<Props> = ({
     case "IN_PROGRESS":
       return (
         <Button
-          title="Complete Booking"
+          title="Complete Order"
           color={color.primary}
           height={windowHeight(5)}
           width={windowWidth(85)}
           iconType="MaterialCommunityIcons"
-          iconName="timer-sand-complete"
+          iconName="check-decagram"
           iconSize={22}
           isIcon
           onPress={() => router.push(`/completeOrder/${orderDocId}`)}

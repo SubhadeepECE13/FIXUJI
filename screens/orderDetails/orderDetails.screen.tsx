@@ -163,7 +163,7 @@ const OrderDetailsScreen = () => {
         )}
       </ScrollView>
 
-      <View style={styles.footer}>
+      {/* <View style={styles.footer}>
         <View style={styles.totalBox}>
           <Text style={styles.totalLabel}>Final Payable</Text>
           <Text style={styles.totalValue}>₹{grandTotal}</Text>
@@ -177,7 +177,7 @@ const OrderDetailsScreen = () => {
           disabled={!isDirty || saving}
           isLoading={saving}
         />
-      </View>
+      </View> */}
     </View>
   );
 };

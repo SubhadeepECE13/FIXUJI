@@ -9,6 +9,7 @@ import {
 } from "@/store/reducers/vendor/vendorSlice";
 import { AppDispatch } from "@/store/Store";
 import Toast from "react-native-toast-message";
+import { getAllOrders } from "../orders/OrderAction";
 
 export interface VendorDetailes {
   id: string;
@@ -47,8 +48,49 @@ export interface VendorPayload {
   }[];
 }
 
+// export const updateVendorDetails =
+//   (orderId: string, payload: VendorPayload) =>
+//   async (dispatch: AppDispatch) => {
+//     try {
+//       dispatch(updateVendorsStart());
+
+//       const response = await appAxios.put(
+//         `/api/v1/updateStaffInfo/${orderId}`,
+//         payload
+//       );
+
+//       dispatch(updateVendorsSuccess(response.data));
+//       Toast.show({
+//         type: "success",
+//         text1: `${payload.vendors.length} vendor(s) updated successfully!`,
+//       });
+
+//       return response.data;
+//     } catch (error: any) {
+//       console.error("updateVendorDetails Error:", error);
+//       dispatch(
+//         updateVendorsFailure(error.message || "Failed to update vendors")
+//       );
+//       Toast.show({
+//         type: "error",
+//         text1: "Failed to update vendor info.",
+//       });
+//       throw error;
+//     }
+//   };
 export const updateVendorDetails =
-  (orderId: string, payload: VendorPayload) =>
+  (
+    orderId: string,
+    payload: VendorPayload,
+    refreshParams?: {
+      city: string;
+      limit: number;
+      page: number;
+      search: string;
+      status: string;
+      operand: string;
+    }
+  ) =>
   async (dispatch: AppDispatch) => {
     try {
       dispatch(updateVendorsStart());
@@ -59,10 +101,15 @@ export const updateVendorDetails =
       );
 
       dispatch(updateVendorsSuccess(response.data));
+
       Toast.show({
         type: "success",
         text1: `${payload.vendors.length} vendor(s) updated successfully!`,
       });
+
+      if (refreshParams) {
+        await dispatch(getAllOrders(refreshParams));
+      }
 
       return response.data;
     } catch (error: any) {
@@ -70,10 +117,9 @@ export const updateVendorDetails =
       dispatch(
         updateVendorsFailure(error.message || "Failed to update vendors")
       );
-      Toast.show({
-        type: "error",
-        text1: "Failed to update vendor info.",
-      });
+
+      Toast.show({ type: "error", text1: "Failed to update vendor info." });
+
       throw error;
     }
   };

@@ -52,6 +52,14 @@ export default function OrdersScreen() {
           user={userObject}
           Order={item}
           settings={settings}
+          refreshFilters={{
+            city: userCity,
+            limit: 10,
+            page: 1,
+            search: debouncedSearchText,
+            status: ORDERS_SCREEN_TABS[selectedIndex].status,
+            operand: ORDERS_SCREEN_TABS[selectedIndex].operand,
+          }}
         />
       );
     },

@@ -36,6 +36,7 @@ type Props = {
   navigateAddressLink: string | null;
   settings: SettingsResponse;
   iconStyle?: any;
+  refreshFilters: any;
 };
 
 const ContactActions: React.FC<Props> = ({
@@ -47,6 +48,7 @@ const ContactActions: React.FC<Props> = ({
   settings,
   containerStyle = {},
   iconStyle = {},
+  refreshFilters,
 }) => {
   const [currentLocation, setCurrentLocation] = useState<{
     latitude: number;
@@ -114,67 +116,125 @@ const ContactActions: React.FC<Props> = ({
     }
   }, [dispatch, order, user, settings]);
 
+  // const openGoogleMaps = useCallback(async () => {
+  //   if (navigateAddressLink) {
+  //     try {
+  //       const supported = await Linking.canOpenURL(navigateAddressLink);
+  //       if (supported) {
+  //         await Linking.openURL(navigateAddressLink);
+  //         return;
+  //       } else {
+  //         Toast.show({ type: "error", text1: "Cannot open map link." });
+  //       }
+  //     } catch (error) {
+  //       Toast.show({ type: "error", text1: "Failed to open map link." });
+  //       return;
+  //     }
+  //   }
+
+  //   if (!currentLocation) {
+  //     Toast.show({ type: "error", text1: "Current location not available." });
+  //     return;
+  //   }
+
+  //   if (!geolocation) {
+  //     Toast.show({
+  //       type: "error",
+  //       text1: "Geolocation not available for this customer.",
+  //     });
+  //     return;
+  //   }
+
+  //   setMapLoading(true);
+
+  //   const { latitude: currentLat, longitude: currentLng } = currentLocation;
+  //   const [destLat, destLng] = geolocation.split(",");
+
+  //   let url = "";
+
+  //   try {
+  //     if (Platform.OS === "ios") {
+  //       url = `http://maps.apple.com/?saddr=${currentLat},${currentLng}&daddr=${destLat},${destLng}&dirflg=d`;
+  //       const googleMapsURL = `comgooglemaps://?saddr=${currentLat},${currentLng}&daddr=${destLat},${destLng}&directionsmode=driving`;
+  //       const canOpenGoogleMaps = await Linking.canOpenURL(googleMapsURL);
+  //       if (canOpenGoogleMaps) url = googleMapsURL;
+  //     } else {
+  //       url = `https://www.google.com/maps/dir/?api=1&origin=${currentLat},${currentLng}&destination=${destLat},${destLng}&travelmode=driving`;
+  //     }
+
+  //     const supported = await Linking.canOpenURL(url);
+  //     if (!supported) {
+  //       Toast.show({
+  //         type: "error",
+  //         text1: "Maps application is not available.",
+  //       });
+  //       return;
+  //     }
+  //     await Linking.openURL(url);
+  //   } catch (error) {
+  //     Toast.show({ type: "error", text1: "Failed to open the map." });
+  //   } finally {
+  //     setMapLoading(false);
+  //   }
+  // }, [navigateAddressLink, currentLocation, geolocation]);
+
   const openGoogleMaps = useCallback(async () => {
-    if (navigateAddressLink) {
-      try {
+    try {
+      // 🔹 1️⃣ First preference → redirect link
+      if (navigateAddressLink) {
         const supported = await Linking.canOpenURL(navigateAddressLink);
         if (supported) {
           await Linking.openURL(navigateAddressLink);
           return;
         } else {
-          Toast.show({ type: "error", text1: "Cannot open map link." });
+          Toast.show({
+            type: "error",
+            text1: "Cannot open provided address link.",
+          });
         }
-      } catch (error) {
-        Toast.show({ type: "error", text1: "Failed to open map link." });
+      }
+
+      // 🔹 2️⃣ Next → Use coordinates if available
+      if (!currentLocation) {
+        Toast.show({ type: "error", text1: "Current location not available." });
         return;
       }
-    }
 
-    if (!currentLocation) {
-      Toast.show({ type: "error", text1: "Current location not available." });
-      return;
-    }
+      if (!geolocation) {
+        Toast.show({
+          type: "error",
+          text1: "Location coordinate not available for this user.",
+        });
+        return;
+      }
 
-    if (!geolocation) {
-      Toast.show({
-        type: "error",
-        text1: "Geolocation not available for this customer.",
-      });
-      return;
-    }
+      const [destLat, destLng] = geolocation.split(",");
+      const { latitude: currentLat, longitude: currentLng } = currentLocation;
 
-    setMapLoading(true);
+      let url = "";
 
-    const { latitude: currentLat, longitude: currentLng } = currentLocation;
-    const [destLat, destLng] = geolocation.split(",");
-
-    let url = "";
-
-    try {
       if (Platform.OS === "ios") {
-        url = `http://maps.apple.com/?saddr=${currentLat},${currentLng}&daddr=${destLat},${destLng}&dirflg=d`;
+        url = `http://maps.apple.com/?saddr=${currentLat},${currentLng}&daddr=${destLat},${destLng}`;
         const googleMapsURL = `comgooglemaps://?saddr=${currentLat},${currentLng}&daddr=${destLat},${destLng}&directionsmode=driving`;
-        const canOpenGoogleMaps = await Linking.canOpenURL(googleMapsURL);
-        if (canOpenGoogleMaps) url = googleMapsURL;
+        const canOpenGoogle = await Linking.canOpenURL(googleMapsURL);
+        if (canOpenGoogle) url = googleMapsURL;
       } else {
         url = `https://www.google.com/maps/dir/?api=1&origin=${currentLat},${currentLng}&destination=${destLat},${destLng}&travelmode=driving`;
       }
 
       const supported = await Linking.canOpenURL(url);
-      if (!supported) {
-        Toast.show({
-          type: "error",
-          text1: "Maps application is not available.",
-        });
-        return;
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Toast.show({ type: "error", text1: "Maps app not available." });
       }
-      await Linking.openURL(url);
     } catch (error) {
-      Toast.show({ type: "error", text1: "Failed to open the map." });
-    } finally {
-      setMapLoading(false);
+      Toast.show({ type: "error", text1: "Failed to open maps." });
     }
   }, [navigateAddressLink, currentLocation, geolocation]);
+
+  //
+
   const handleStartPress = () => {
     setIsVendorModalOpen(true);
 
@@ -246,6 +306,7 @@ const ContactActions: React.FC<Props> = ({
           setOpened={setIsVendorModalOpen}
           onSelect={handleVendorSelect}
           orderId={order.orderDocId}
+          refreshFilters={refreshFilters}
         />
       </View>
     </>

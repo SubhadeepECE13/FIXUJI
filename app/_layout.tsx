@@ -57,7 +57,7 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    LogBox.ignoreAllLogs(true);
+    // LogBox.ignoreAllLogs(true);
     if (loaded || error) {
       SplashScreen.hideAsync();
     }

@@ -207,12 +207,14 @@ import {
   windowHeight,
   windowWidth,
 } from "@/themes/Constants.themes";
+import { router } from "expo-router";
 
 type VendorSelectModalProps = {
   isOpen: boolean;
   setOpened: (val: boolean) => void;
   onSelect: (selectedVendors: any[]) => void;
   orderId: string;
+  refreshFilters: any;
 };
 
 const VendorSelectModal: React.FC<VendorSelectModalProps> = ({
@@ -220,6 +222,7 @@ const VendorSelectModal: React.FC<VendorSelectModalProps> = ({
   setOpened,
   onSelect,
   orderId,
+  refreshFilters,
 }) => {
   const dispatch = useAppDispatch();
   const { vendors, loading } = useAppSelector((state) => state.vendor);
@@ -250,16 +253,24 @@ const VendorSelectModal: React.FC<VendorSelectModalProps> = ({
     };
 
     setIsSubmitting(true);
+
     try {
-      await dispatch(updateVendorDetails(orderId, payload));
+      await dispatch(updateVendorDetails(orderId, payload, refreshFilters));
+
       onSelect(selectedVendors);
       setOpened(false);
+
+      setTimeout(() => {
+        router.replace(`/orderDetailes/${orderId}`);
+      }, 300);
     } catch (error) {
       console.error("Error updating vendors:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  console.log("in start ", orderId);
 
   const renderItem = ({ item, index }: any) => (
     <TouchableOpacity
